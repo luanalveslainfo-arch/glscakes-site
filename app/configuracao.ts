@@ -64,14 +64,14 @@ export const configuracao = {
     },
   },
   docesPersonalizados: [
-    { id: "bolo-palito", nome: "Bolo no Palito", preco: 15 },
-    { id: "popsicle", nome: "Popsicle (Picolé)", preco: 15 },
-    { id: "pao-de-mel-3d", nome: "Pão de Mel 3D", preco: 15 },
-    { id: "pao-de-mel-simples", nome: "Pão de Mel Simples", preco: 7 },
-    { id: "mini-cupcakes", nome: "Mini Cupcakes", preco: 4 },
-    { id: "pirulito-chocolate", nome: "Pirulito de Chocolate", preco: 10 },
-    { id: "biscoito-decorado", nome: "Biscoito Decorado", preco: 10 },
-    { id: "mini-trufinha-decorada", nome: "Mini Trufinha Decorada", preco: 4 },
+    { id: "bolo-palito", nome: "Bolo no Palito", preco: 15, imagem: "/images/personalizados/bolo-palito.jpg" },
+    { id: "popsicle", nome: "Popsicle (Picolé)", preco: 15, imagem: "/images/personalizados/popsicle-sonic.jpg" },
+    { id: "pao-de-mel-3d", nome: "Pão de Mel 3D", preco: 15, imagem: "/images/personalizados/pao-mel-3d.jpg" },
+    { id: "pao-de-mel-simples", nome: "Pão de Mel Simples", preco: 7, imagem: "/images/personalizados/pao-mel-simples.jpg" },
+    { id: "mini-cupcakes", nome: "Mini Cupcakes", preco: 4, imagem: "/images/personalizados/mini-cupcakes.jpg" },
+    { id: "pirulito-chocolate", nome: "Pirulito de Chocolate", preco: 10, imagem: "/images/personalizados/pirulito-chocolate.jpg" },
+    { id: "biscoito-decorado", nome: "Biscoito Decorado", preco: 10, imagem: "/images/personalizados/biscoito-decorado.jpg" },
+    { id: "mini-trufinha-decorada", nome: "Mini Trufinha Decorada", preco: 4, imagem: "/images/personalizados/mini-trufinha.jpg" },
   ],
 } as const;
 

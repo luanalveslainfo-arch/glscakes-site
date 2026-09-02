@@ -136,6 +136,45 @@ export default function Home() {
     window.setTimeout(() => setAviso(""), 3200);
   }
 
+  function alterarQtdPersonalizado(produto: (typeof configuracao.docesPersonalizados)[number], delta: number) {
+    setItens((atuais) => {
+      const index = atuais.findIndex((it) => it.titulo === produto.nome);
+      if (index === -1) {
+        if (delta <= 0) return atuais;
+        const novoItem: ItemPedido = {
+          id: `personalizado-${produto.id}-${Date.now()}`,
+          titulo: produto.nome,
+          descricao: "Doce personalizado por unidade",
+          quantidade: delta,
+          unitario: produto.preco,
+          total: produto.preco * delta,
+        };
+        setAviso(`${produto.nome} foi adicionado ao pedido.`);
+        window.setTimeout(() => setAviso(""), 3200);
+        return [...atuais, novoItem];
+      }
+
+      const itemAtual = atuais[index];
+      const novaQtd = itemAtual.quantidade + delta;
+
+      if (novaQtd <= 0) {
+        setAviso(`${produto.nome} foi removido do pedido.`);
+        window.setTimeout(() => setAviso(""), 3200);
+        return atuais.filter((_, i) => i !== index);
+      }
+
+      const atualizado: ItemPedido = {
+        ...itemAtual,
+        quantidade: novaQtd,
+        total: itemAtual.unitario * novaQtd,
+      };
+
+      const novos = [...atuais];
+      novos[index] = atualizado;
+      return novos;
+    });
+  }
+
   function mudarTipoDocinho(tipo: TipoDocinho) {
     setTipoDocinho(tipo);
     setSaborDocinho(configuracao.docinhos[tipo].sabores[0]);
@@ -305,21 +344,73 @@ export default function Home() {
 
               {categoria === "personalizados" && (
                 <>
-                  <div className="panel-heading"><span>05</span><div><h3>Doces Personalizados</h3><p>Escolha o item e informe quantas unidades deseja.</p></div></div>
-                  <div className="option-cards">
-                    {configuracao.docesPersonalizados.map((item) => (
-                      <button key={item.id} className={docePersonalizadoId === item.id ? "option selected" : "option"} onClick={() => setDocePersonalizadoId(item.id)}>
-                        <span className="radio" /><span><strong>{item.nome}</strong><small>Venda por unidade</small></span><b>{moeda(item.preco)} <small>cada</small></b>
-                      </button>
-                    ))}
+                  <div className="panel-heading"><span>05</span><div><h3>Doces Personalizados</h3><p>Escolha os itens e informe quantas unidades deseja de cada um.</p></div></div>
+                  <div className="personalizados-list">
+                    {configuracao.docesPersonalizados.map((item) => {
+                      const itemNoCarrinho = itens.find((it) => it.titulo === item.nome);
+                      const qtdNoCarrinho = itemNoCarrinho?.quantidade ?? 0;
+                      return (
+                        <article
+                          key={item.id}
+                          className={`personalizado-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all ${
+                            qtdNoCarrinho > 0 ? "active border-[var(--rose)] bg-[#fff5f7]" : "border-[var(--line)] bg-[var(--paper)]"
+                          }`}
+                        >
+                          <div className="personalizado-info flex items-center gap-3 min-w-0 flex-1">
+                            <img
+                              src={item.imagem}
+                              alt={item.nome}
+                              className="personalizado-thumb w-16 h-16 rounded-lg object-cover flex-shrink-0 shadow-sm"
+                              width={64}
+                              height={64}
+                              loading="lazy"
+                            />
+                            <div className="personalizado-text flex flex-col justify-center min-w-0 flex-1">
+                              <strong className="personalizado-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                {item.nome}
+                              </strong>
+                              <span className="personalizado-price text-xs md:text-sm font-semibold text-[var(--rose-dark)]">
+                                {moeda(item.preco)} <small className="text-[var(--muted)] font-normal">cada</small>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="personalizado-qty flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap">
+                            <button
+                              type="button"
+                              className="qty-btn"
+                              onClick={() => alterarQtdPersonalizado(item, -1)}
+                              disabled={qtdNoCarrinho === 0}
+                              aria-label={`Diminuir quantidade de ${item.nome}`}
+                            >
+                              －
+                            </button>
+                            <span className="qty-value font-bold text-sm min-w-[24px] text-center" aria-live="polite">
+                              {qtdNoCarrinho}
+                            </span>
+                            <button
+                              type="button"
+                              className="qty-btn add"
+                              onClick={() => alterarQtdPersonalizado(item, 1)}
+                              aria-label={`Aumentar quantidade de ${item.nome}`}
+                            >
+                              ＋
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
+                  <p className="personalizados-hint">Use os botões de ＋ e － ao lado de cada doce para montar sua quantidade.</p>
                 </>
               )}
 
-              <div className="add-row">
-                <label>Quantidade<input type="number" min="1" max="20" value={quantidade} onChange={(e) => setQuantidade(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} /></label>
-                <button className="button primary add-button" onClick={adicionar}>Adicionar ao pedido <span>＋</span></button>
-              </div>
+              {categoria !== "personalizados" && (
+                <div className="add-row">
+                  <label>Quantidade<input type="number" min="1" max="20" value={quantidade} onChange={(e) => setQuantidade(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} /></label>
+                  <button className="button primary add-button" onClick={adicionar}>Adicionar ao pedido <span>＋</span></button>
+                </div>
+              )}
               {aviso && <p className="notice" role="status">{aviso}</p>}
             </div>
           </div>
