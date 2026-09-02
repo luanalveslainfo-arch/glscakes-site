@@ -360,7 +360,7 @@ export default function Home() {
                             <img
                               src={item.imagem}
                               alt={item.nome}
-                              className="personalizado-thumb w-16 h-16 rounded-lg object-cover flex-shrink-0 shadow-sm"
+                              className="personalizado-thumb w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm"
                               width={64}
                               height={64}
                               loading="lazy"
