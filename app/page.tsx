@@ -485,12 +485,75 @@ export default function Home() {
               {categoria === "kit" && (
                 <>
                   <div className="panel-heading"><span>03</span><div><h3>Kit Festa Personalizado</h3><p>Bolo, docinhos e mini cupcakes para sua comemoração.</p></div></div>
-                  <div className="option-cards">
-                    {configuracao.kits.map((item) => (
-                      <button key={item.id} className={kitId === item.id ? "option selected" : "option"} onClick={() => setKitId(item.id)}>
-                        <span className="radio" /><span><strong>{item.nome}</strong><small>{item.detalhe}</small></span><b>{moeda(item.preco)}</b>
-                      </button>
-                    ))}
+                  <div className="kit-list">
+                    {configuracao.kits.map((item) => {
+                      const isSelected = kitId === item.id;
+                      return (
+                        <div
+                          key={item.id}
+                          className={`kit-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
+                              : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
+                          }`}
+                          onClick={() => setKitId(item.id)}
+                          role="radio"
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setKitId(item.id);
+                            }
+                          }}
+                        >
+                          <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                            <div
+                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: `${item.nome} — Festa Completa` });
+                              }}
+                              title="Clique para ampliar a foto"
+                              aria-label={`Ampliar foto do ${item.nome}`}
+                            >
+                              <img
+                                src={item.imagem}
+                                alt={item.nome}
+                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                width={64}
+                                height={64}
+                                loading="lazy"
+                              />
+                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="11" cy="11" r="8"></circle>
+                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                              </span>
+                            </div>
+
+                            <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
+                              <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                {item.nome}
+                              </strong>
+                              <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                {item.detalhe}
+                              </small>
+                            </div>
+                          </div>
+
+                          <div className="bento-right flex items-center gap-3 flex-shrink-0">
+                            <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                              {moeda(item.preco)}
+                            </b>
+                            <span className={`radio ${isSelected ? "selected" : ""}`} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               )}

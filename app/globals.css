@@ -130,10 +130,10 @@ select, input, textarea { width: 100%; margin-top: 8px; padding: 13px 14px; colo
 select:focus, input:focus, textarea:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(217,55,110,.1); }
 textarea { resize: vertical; }
 .option-cards { display: grid; gap: 10px; }
-.bento-list, .acabamento-list { display: flex; flex-direction: column; gap: 12px; }
-.bento-card, .acabamento-card { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); cursor: pointer; text-align: left; transition: border-color .2s, background-color .2s, box-shadow .2s; }
-.bento-card:hover, .acabamento-card:hover { border-color: var(--rose-soft); }
-.bento-card.active, .acabamento-card.active { border-color: var(--rose); background: #fff5f7; box-shadow: 0 4px 14px rgba(217, 55, 110, .08); }
+.bento-list, .acabamento-list, .kit-list { display: flex; flex-direction: column; gap: 12px; }
+.bento-card, .acabamento-card, .kit-card { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); cursor: pointer; text-align: left; transition: border-color .2s, background-color .2s, box-shadow .2s; }
+.bento-card:hover, .acabamento-card:hover, .kit-card:hover { border-color: var(--rose-soft); }
+.bento-card.active, .acabamento-card.active, .kit-card.active { border-color: var(--rose); background: #fff5f7; box-shadow: 0 4px 14px rgba(217, 55, 110, .08); }
 .bento-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
 .bento-thumb-container { position: relative; width: 64px; height: 64px; min-width: 64px; min-height: 64px; border-radius: 12px; overflow: hidden; flex-shrink: 0; cursor: pointer; background: var(--blush-strong); box-shadow: 0 2px 6px rgba(0, 0, 0, .06); }
 .bento-thumb-container img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease, opacity .2s ease; }
@@ -145,7 +145,7 @@ textarea { resize: vertical; }
 .bento-detail { font-size: 0.76rem; color: var(--muted); line-height: 1.35; }
 .bento-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .bento-price { font-size: 0.9rem; font-weight: 700; color: var(--rose-dark); white-space: nowrap; }
-.bento-card.active .radio, .acabamento-card.active .radio { border: 5px solid var(--rose); }
+.bento-card.active .radio, .acabamento-card.active .radio, .kit-card.active .radio { border: 5px solid var(--rose); }
 
 /* Lightbox Modal */
 .lightbox-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; animation: fadeIn 0.2s ease-out; }
@@ -306,7 +306,7 @@ footer > a:last-child { justify-self: end; color: #ffc3d4; font-size: .78rem; fo
   .personalizado-price { font-size: 0.82rem; }
   .qty-btn { width: 30px; height: 30px; font-size: 1rem; }
   .qty-value { min-width: 20px; font-size: 0.86rem; }
-  .bento-card, .acabamento-card { padding: 10px 12px; gap: 10px; }
+  .bento-card, .acabamento-card, .kit-card { padding: 10px 12px; gap: 10px; }
   .bento-info { gap: 10px; }
   .bento-title { font-size: 0.9rem; }
   .bento-detail { font-size: 0.74rem; }
@@ -332,7 +332,7 @@ footer > a:last-child { justify-self: end; color: #ffc3d4; font-size: .78rem; fo
   .personalizado-price { font-size: 0.78rem; }
   .qty-btn { width: 28px; height: 28px; font-size: 0.9rem; }
   .qty-value { min-width: 18px; font-size: 0.82rem; }
-  .bento-card, .acabamento-card { padding: 8px 10px; gap: 8px; }
+  .bento-card, .acabamento-card, .kit-card { padding: 8px 10px; gap: 8px; }
   .bento-info { gap: 8px; }
   .bento-title { font-size: 0.84rem; }
   .bento-detail { font-size: 0.68rem; }

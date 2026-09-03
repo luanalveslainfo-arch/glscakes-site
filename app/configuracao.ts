@@ -46,10 +46,10 @@ export const configuracao = {
     { nome: "Crocante de Oreo", precos: { pp: 15, p: 15, m: 20, g: 25, gg: null } },
   ],
   kits: [
-    { id: "kit-p", nome: "Kit P", detalhe: "Bolo 15 fatias + 25 docinhos + 6 mini cupcakes", preco: 290 },
-    { id: "kit-m", nome: "Kit M", detalhe: "Bolo 20 fatias + 40 docinhos + 8 mini cupcakes", preco: 330 },
-    { id: "kit-g", nome: "Kit G", detalhe: "Bolo 30 fatias + 60 docinhos + 12 mini cupcakes", preco: 470 },
-    { id: "kit-gg", nome: "Kit GG", detalhe: "Bolo 50 fatias + 100 docinhos + 16 mini cupcakes", preco: 580 },
+    { id: "kit-p", nome: "Kit P", detalhe: "Bolo 15 fatias + 25 docinhos + 6 mini cupcakes", preco: 290, imagem: "/images/kits/kit-p.jpg" },
+    { id: "kit-m", nome: "Kit M", detalhe: "Bolo 20 fatias + 40 docinhos + 8 mini cupcakes", preco: 330, imagem: "/images/kits/kit-m.jpg" },
+    { id: "kit-g", nome: "Kit G", detalhe: "Bolo 30 fatias + 60 docinhos + 12 mini cupcakes", preco: 470, imagem: "/images/kits/kit-g.jpg" },
+    { id: "kit-gg", nome: "Kit GG", detalhe: "Bolo 50 fatias + 100 docinhos + 16 mini cupcakes", preco: 580, imagem: "/images/kits/kit-gg.jpg" },
   ],
   docinhos: {
     tradicionais: {
