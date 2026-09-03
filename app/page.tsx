@@ -561,9 +561,79 @@ export default function Home() {
               {categoria === "docinhos" && (
                 <>
                   <div className="panel-heading"><span>04</span><div><h3>Docinhos</h3><p>Escolha a linha, a quantidade e o sabor.</p></div></div>
-                  <fieldset><legend>1. Linha</legend><div className="finish-options two">
-                    {(Object.keys(configuracao.docinhos) as TipoDocinho[]).map((tipo) => <button key={tipo} className={tipoDocinho === tipo ? "selected" : ""} onClick={() => mudarTipoDocinho(tipo)}><strong>{configuracao.docinhos[tipo].nome}</strong><small>a partir de {moeda(configuracao.docinhos[tipo].precos[25])}</small></button>)}
-                  </div></fieldset>
+                  <fieldset><legend>1. Linha</legend>
+                    <div className="docinho-linha-list">
+                      {(Object.keys(configuracao.docinhos) as TipoDocinho[]).map((tipo) => {
+                        const isSelected = tipoDocinho === tipo;
+                        const docinho = configuracao.docinhos[tipo];
+                        return (
+                          <div
+                            key={tipo}
+                            className={`docinho-linha-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                              isSelected
+                                ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
+                                : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
+                            }`}
+                            onClick={() => mudarTipoDocinho(tipo)}
+                            role="radio"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                mudarTipoDocinho(tipo);
+                              }
+                            }}
+                          >
+                            <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                              <div
+                                className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setModalImagem({ src: docinho.imagem, alt: `Docinhos ${docinho.nome}`, titulo: `Docinhos ${docinho.nome}` });
+                                }}
+                                title="Clique para ampliar a foto"
+                                aria-label={`Ampliar foto dos docinhos ${docinho.nome}`}
+                              >
+                                <img
+                                  src={docinho.imagem}
+                                  alt={`Docinhos ${docinho.nome}`}
+                                  className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                  width={64}
+                                  height={64}
+                                  loading="lazy"
+                                />
+                                <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                  </svg>
+                                </span>
+                              </div>
+
+                              <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
+                                <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                  {docinho.nome}
+                                </strong>
+                                <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                  {docinho.detalhe}
+                                </small>
+                              </div>
+                            </div>
+
+                            <div className="bento-right flex items-center gap-3 flex-shrink-0">
+                              <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                                a partir de {moeda(docinho.precos[25])}
+                              </b>
+                              <span className={`radio ${isSelected ? "selected" : ""}`} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
                   <fieldset><legend>2. Quantidade</legend><div className="finish-options three">
                     {([25, 50, 100] as const).map((qtd) => <button key={qtd} className={qtdDocinhos === qtd ? "selected" : ""} onClick={() => setQtdDocinhos(qtd)}><strong>{qtd} un</strong><small>{moeda(configuracao.docinhos[tipoDocinho].precos[qtd])}</small></button>)}
                   </div></fieldset>

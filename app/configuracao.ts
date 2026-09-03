@@ -54,13 +54,17 @@ export const configuracao = {
   docinhos: {
     tradicionais: {
       nome: "Tradicionais",
+      detalhe: "Brigadeiro, Beijinho, Moranguinho e clássicos",
       precos: { 25: 50, 50: 95, 100: 180 },
       sabores: ["Brigadeiro de Chocolate", "Brigadeiro Branco", "Beijinho", "Moranguinho", "Casadinho"],
+      imagem: "/images/docinhos/docinhos-tradicionais.jpg",
     },
     gourmet: {
       nome: "Gourmet",
+      detalhe: "Ferreiro, Ninho com Nutella, Romeu e Julieta e nobres",
       precos: { 25: 60, 50: 120, 100: 230 },
       sabores: ["Brigadeiro Meio Amargo", "Ferreiro", "Ninho com Nutella", "Cajuzinho", "Oreo", "Churros", "Romeu e Julieta", "Surpresa de Uva"],
+      imagem: "/images/docinhos/docinhos-gourmet.jpg",
     },
   },
   docesPersonalizados: [
