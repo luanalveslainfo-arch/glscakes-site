@@ -24,6 +24,24 @@ const categorias: { id: Categoria; numero: string; nome: string; resumo: string 
 
 const acabamentos = ["Naked", "Chantininho", "Buttercream"] as const;
 
+const acabamentoConfig: Record<
+  (typeof acabamentos)[number],
+  { imagem: string; detalhe: string }
+> = {
+  Naked: {
+    imagem: "/images/bolos/bolo-naked.jpg",
+    detalhe: "Massa e recheio aparentes com frutas frescas",
+  },
+  Chantininho: {
+    imagem: "/images/bolos/bolo-chantininho.jpg",
+    detalhe: "Cobertura cremosa e clássica de Ninho",
+  },
+  Buttercream: {
+    imagem: "/images/bolos/bolo-buttercream.jpg",
+    detalhe: "Creme aveludado com acabamento liso refinado",
+  },
+};
+
 function moeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -374,9 +392,80 @@ export default function Home() {
                       </button>
                     ))}
                   </div></fieldset>
-                  <fieldset><legend>2. Acabamento</legend><div className="finish-options">
-                    {acabamentos.map((item) => <button key={item} className={acabamento === item ? "selected" : ""} onClick={() => setAcabamento(item)}><strong>{item}</strong><small>{moeda(item === "Naked" ? tamanho.naked : tamanho.decorado)}</small></button>)}
-                  </div></fieldset>
+                  <fieldset><legend>2. Acabamento</legend>
+                    <div className="acabamento-list">
+                      {acabamentos.map((item) => {
+                        const isSelected = acabamento === item;
+                        const precoAcabamento = item === "Naked" ? tamanho.naked : tamanho.decorado;
+                        const config = acabamentoConfig[item];
+                        return (
+                          <div
+                            key={item}
+                            className={`acabamento-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                              isSelected
+                                ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
+                                : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
+                            }`}
+                            onClick={() => setAcabamento(item)}
+                            role="radio"
+                            aria-checked={isSelected}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setAcabamento(item);
+                              }
+                            }}
+                          >
+                            <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                              <div
+                                className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setModalImagem({ src: config.imagem, alt: `Bolo Acabamento ${item}`, titulo: `Bolo — Acabamento ${item}` });
+                                }}
+                                title="Clique para ampliar a foto"
+                                aria-label={`Ampliar foto do acabamento ${item}`}
+                              >
+                                <img
+                                  src={config.imagem}
+                                  alt={`Bolo ${item}`}
+                                  className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                  width={64}
+                                  height={64}
+                                  loading="lazy"
+                                />
+                                <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                  </svg>
+                                </span>
+                              </div>
+
+                              <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
+                                <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                  {item}
+                                </strong>
+                                <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                  {config.detalhe}
+                                </small>
+                              </div>
+                            </div>
+
+                            <div className="bento-right flex items-center gap-3 flex-shrink-0">
+                              <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                                {moeda(precoAcabamento)}
+                              </b>
+                              <span className={`radio ${isSelected ? "selected" : ""}`} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
                   <div className="form-grid">
                     <label>3. Massa<select value={massa} onChange={(e) => setMassa(e.target.value)}>{configuracao.massas.map((item) => <option key={item}>{item}</option>)}</select></label>
                     <label>4. Recheio principal<select value={recheio} onChange={(e) => setRecheio(e.target.value)}>{configuracao.recheios.map((item) => <option key={item}>{item}</option>)}</select></label>
