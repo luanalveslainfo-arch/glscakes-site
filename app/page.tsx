@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { configuracao, type DocePersonalizadoId, type TamanhoId, type TipoDocinho } from "./configuracao";
 
 type Categoria = "bento" | "bolo" | "kit" | "docinhos" | "personalizados";
@@ -56,6 +56,20 @@ export default function Home() {
   const [ocasiao, setOcasiao] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [aviso, setAviso] = useState("");
+  const [modalImagem, setModalImagem] = useState<{ src: string; alt: string; titulo: string } | null>(null);
+
+  useEffect(() => {
+    if (!modalImagem) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalImagem(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [modalImagem]);
 
   const tamanho = configuracao.bolos.find((item) => item.id === tamanhoId)!;
   const precoBaseBolo = acabamento === "Naked" ? tamanho.naked : tamanho.decorado;
@@ -277,12 +291,75 @@ export default function Home() {
               {categoria === "bento" && (
                 <>
                   <div className="panel-heading"><span>01</span><div><h3>Escolha seu Bentô</h3><p>Ideal para presentear ou comemorar de um jeito íntimo.</p></div></div>
-                  <div className="option-cards">
-                    {configuracao.bento.map((item) => (
-                      <button key={item.id} className={bentoId === item.id ? "option selected" : "option"} onClick={() => setBentoId(item.id)}>
-                        <span className="radio" /><span><strong>{item.nome}</strong><small>{item.detalhe}</small></span><b>{moeda(item.preco)}</b>
-                      </button>
-                    ))}
+                  <div className="bento-list">
+                    {configuracao.bento.map((item) => {
+                      const isSelected = bentoId === item.id;
+                      return (
+                        <div
+                          key={item.id}
+                          className={`bento-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
+                              : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
+                          }`}
+                          onClick={() => setBentoId(item.id)}
+                          role="radio"
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setBentoId(item.id);
+                            }
+                          }}
+                        >
+                          <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                            <div
+                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: item.nome });
+                              }}
+                              title="Clique para ampliar a foto"
+                              aria-label={`Ampliar foto de ${item.nome}`}
+                            >
+                              <img
+                                src={item.imagem}
+                                alt={item.nome}
+                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                width={64}
+                                height={64}
+                                loading="lazy"
+                              />
+                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="11" cy="11" r="8"></circle>
+                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                              </span>
+                            </div>
+
+                            <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
+                              <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                {item.nome}
+                              </strong>
+                              <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                {item.detalhe}
+                              </small>
+                            </div>
+                          </div>
+
+                          <div className="bento-right flex items-center gap-3 flex-shrink-0">
+                            <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                              {moeda(item.preco)}
+                            </b>
+                            <span className={`radio ${isSelected ? "selected" : ""}`} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -448,6 +525,41 @@ export default function Home() {
       </section>
 
       <footer><a className="footer-brand" href="#inicio"><img src={configuracao.marca.logo} alt="" /><span><strong>Glscakes</strong><small>Confeitaria artesanal</small></span></a><p>Realizando sonhos com amor e doçuras.</p><a href={`https://wa.me/${configuracao.marca.whatsapp}`} target="_blank" rel="noreferrer">{configuracao.marca.whatsappExibicao}</a></footer>
+
+      {modalImagem && (
+        <div
+          className="lightbox-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          onClick={() => setModalImagem(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Visualização ampliada de ${modalImagem.titulo}`}
+        >
+          <div
+            className="lightbox-content relative max-w-xl max-h-[90vh] w-full flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="lightbox-close absolute -top-12 right-0 sm:-right-10 text-white/85 hover:text-white bg-black/60 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center transition-all cursor-pointer text-lg font-bold shadow-lg"
+              onClick={() => setModalImagem(null)}
+              aria-label="Fechar ampliação"
+            >
+              ✕
+            </button>
+            <div className="lightbox-image-box overflow-hidden rounded-2xl bg-[#1e1317] border border-white/15 shadow-2xl flex flex-col items-center w-full">
+              <img
+                src={modalImagem.src}
+                alt={modalImagem.alt}
+                className="lightbox-img max-h-[75vh] w-auto max-w-full object-contain rounded-t-2xl"
+              />
+              <div className="lightbox-caption w-full bg-[#25161c] px-4 py-3 text-center border-t border-white/10">
+                <h4 className="text-white text-base sm:text-lg font-semibold">{modalImagem.titulo}</h4>
+                <p className="text-white/60 text-xs mt-0.5">Pressione ESC ou clique fora da imagem para fechar</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

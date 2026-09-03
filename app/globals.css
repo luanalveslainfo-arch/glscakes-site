@@ -130,6 +130,35 @@ select, input, textarea { width: 100%; margin-top: 8px; padding: 13px 14px; colo
 select:focus, input:focus, textarea:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(217,55,110,.1); }
 textarea { resize: vertical; }
 .option-cards { display: grid; gap: 10px; }
+.bento-list { display: flex; flex-direction: column; gap: 12px; }
+.bento-card { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); cursor: pointer; text-align: left; transition: border-color .2s, background-color .2s, box-shadow .2s; }
+.bento-card:hover { border-color: var(--rose-soft); }
+.bento-card.active { border-color: var(--rose); background: #fff5f7; box-shadow: 0 4px 14px rgba(217, 55, 110, .08); }
+.bento-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.bento-thumb-container { position: relative; width: 64px; height: 64px; min-width: 64px; min-height: 64px; border-radius: 12px; overflow: hidden; flex-shrink: 0; cursor: pointer; background: var(--blush-strong); box-shadow: 0 2px 6px rgba(0, 0, 0, .06); }
+.bento-thumb-container img { width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease, opacity .2s ease; }
+.bento-thumb-container:hover img { transform: scale(1.06); opacity: 0.92; }
+.zoom-badge { position: absolute; bottom: 3px; right: 3px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.62); color: white; border-radius: 6px; backdrop-filter: blur(4px); pointer-events: none; transition: background .2s; }
+.bento-thumb-container:hover .zoom-badge { background: rgba(0, 0, 0, 0.85); }
+.bento-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.bento-title { font-size: 0.94rem; font-weight: 700; color: var(--ink); line-height: 1.25; margin: 0; }
+.bento-detail { font-size: 0.76rem; color: var(--muted); line-height: 1.35; }
+.bento-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.bento-price { font-size: 0.9rem; font-weight: 700; color: var(--rose-dark); white-space: nowrap; }
+.bento-card.active .radio { border: 5px solid var(--rose); }
+
+/* Lightbox Modal */
+.lightbox-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; animation: fadeIn 0.2s ease-out; }
+.lightbox-content { position: relative; max-width: 580px; max-height: 90vh; width: 100%; display: flex; flex-direction: column; align-items: center; }
+.lightbox-close { position: absolute; top: -46px; right: 0; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 50%; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+.lightbox-close:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.05); }
+.lightbox-image-box { width: 100%; background: #1e1317; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; align-items: center; }
+.lightbox-img { max-height: 72vh; width: auto; max-width: 100%; object-fit: contain; display: block; }
+.lightbox-caption { width: 100%; padding: 14px 18px; text-align: center; background: #25161c; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.lightbox-caption h4 { color: white; margin: 0 0 4px 0; font-size: 1rem; font-weight: 700; }
+.lightbox-caption p { color: rgba(255, 255, 255, 0.6); font-size: 0.72rem; margin: 0; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 .personalizados-list { display: flex; flex-direction: column; gap: 12px; }
 .personalizado-card { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); transition: border-color .2s, background-color .2s, box-shadow .2s; }
 .personalizado-card:hover { border-color: var(--rose-soft); }
@@ -277,6 +306,11 @@ footer > a:last-child { justify-self: end; color: #ffc3d4; font-size: .78rem; fo
   .personalizado-price { font-size: 0.82rem; }
   .qty-btn { width: 30px; height: 30px; font-size: 1rem; }
   .qty-value { min-width: 20px; font-size: 0.86rem; }
+  .bento-card { padding: 10px 12px; gap: 10px; }
+  .bento-info { gap: 10px; }
+  .bento-title { font-size: 0.9rem; }
+  .bento-detail { font-size: 0.74rem; }
+  .bento-price { font-size: 0.86rem; }
   footer { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   footer > a:last-child { justify-self: center; }
 }
@@ -298,4 +332,10 @@ footer > a:last-child { justify-self: end; color: #ffc3d4; font-size: .78rem; fo
   .personalizado-price { font-size: 0.78rem; }
   .qty-btn { width: 28px; height: 28px; font-size: 0.9rem; }
   .qty-value { min-width: 18px; font-size: 0.82rem; }
+  .bento-card { padding: 8px 10px; gap: 8px; }
+  .bento-info { gap: 8px; }
+  .bento-title { font-size: 0.84rem; }
+  .bento-detail { font-size: 0.68rem; }
+  .bento-price { font-size: 0.8rem; }
+  .bento-right { gap: 8px; }
 }

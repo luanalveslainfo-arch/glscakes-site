@@ -27,9 +27,9 @@ export const configuracao = {
     "Brigadeiro de Nozes",
   ],
   bento: [
-    { id: "bento-chantininho", nome: "Bentô Cake — Chantininho", detalhe: "10 cm · 3 a 4 fatias", preco: 45 },
-    { id: "bento-buttercream", nome: "Bentô Cake — Buttercream", detalhe: "10 cm · 3 a 4 fatias", preco: 55 },
-    { id: "box-bento", nome: "Box Bentô Cake", detalhe: "1 bentô + 6 docinhos + vela", preco: 75 },
+    { id: "bento-chantininho", nome: "Bentô Cake — Chantininho", detalhe: "10 cm · 3 a 4 fatias", preco: 45, imagem: "/images/bentos/bento-chantininho.jpg" },
+    { id: "bento-buttercream", nome: "Bentô Cake — Buttercream", detalhe: "10 cm · 3 a 4 fatias", preco: 55, imagem: "/images/bentos/bento-buttercream.jpg" },
+    { id: "box-bento", nome: "Box Bentô Cake", detalhe: "1 bentô + 6 docinhos + vela", preco: 75, imagem: "/images/bentos/box-bento.jpg" },
   ],
   bolos: [
     { id: "pp", diametro: "13 cm", tamanho: "PP", fatias: "10 fatias", naked: 160, decorado: 180 },
