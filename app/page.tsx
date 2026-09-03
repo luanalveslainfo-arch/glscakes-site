@@ -315,11 +315,7 @@ export default function Home() {
                       return (
                         <div
                           key={item.id}
-                          className={`bento-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
-                            isSelected
-                              ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
-                              : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
-                          }`}
+                          className={`bento-card ${isSelected ? "active" : ""}` }
                           onClick={() => setBentoId(item.id)}
                           role="radio"
                           aria-checked={isSelected}
@@ -360,17 +356,17 @@ export default function Home() {
                             </div>
 
                             <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                              <strong className="bento-title">
                                 {item.nome}
                               </strong>
-                              <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                              <small className="bento-detail">
                                 {item.detalhe}
                               </small>
                             </div>
                           </div>
 
                           <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                            <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                            <b className="bento-price">
                               {moeda(item.preco)}
                             </b>
                             <span className={`radio ${isSelected ? "selected" : ""}`} />
@@ -401,11 +397,7 @@ export default function Home() {
                         return (
                           <div
                             key={item}
-                            className={`acabamento-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
-                              isSelected
-                                ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
-                                : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
-                            }`}
+                            className={`acabamento-card ${isSelected ? "active" : ""}` }
                             onClick={() => setAcabamento(item)}
                             role="radio"
                             aria-checked={isSelected}
@@ -446,17 +438,17 @@ export default function Home() {
                               </div>
 
                               <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                                <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                <strong className="bento-title">
                                   {item}
                                 </strong>
-                                <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                <small className="bento-detail">
                                   {config.detalhe}
                                 </small>
                               </div>
                             </div>
 
                             <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                              <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                              <b className="bento-price">
                                 {moeda(precoAcabamento)}
                               </b>
                               <span className={`radio ${isSelected ? "selected" : ""}`} />
@@ -491,11 +483,7 @@ export default function Home() {
                       return (
                         <div
                           key={item.id}
-                          className={`kit-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
-                            isSelected
-                              ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
-                              : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
-                          }`}
+                          className={`kit-card ${isSelected ? "active" : ""}` }
                           onClick={() => setKitId(item.id)}
                           role="radio"
                           aria-checked={isSelected}
@@ -536,17 +524,17 @@ export default function Home() {
                             </div>
 
                             <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                              <strong className="bento-title">
                                 {item.nome}
                               </strong>
-                              <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                              <small className="bento-detail">
                                 {item.detalhe}
                               </small>
                             </div>
                           </div>
 
                           <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                            <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                            <b className="bento-price">
                               {moeda(item.preco)}
                             </b>
                             <span className={`radio ${isSelected ? "selected" : ""}`} />
@@ -614,17 +602,17 @@ export default function Home() {
                               </div>
 
                               <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                                <strong className="bento-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                                <strong className="bento-title">
                                   {docinho.nome}
                                 </strong>
-                                <small className="bento-detail text-xs text-[var(--muted)] line-clamp-1">
+                                <small className="bento-detail">
                                   {docinho.detalhe}
                                 </small>
                               </div>
                             </div>
 
                             <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                              <b className="bento-price text-sm md:text-base font-bold text-[var(--rose-dark)] whitespace-nowrap">
+                              <b className="bento-price">
                                 a partir de {moeda(docinho.precos[25])}
                               </b>
                               <span className={`radio ${isSelected ? "selected" : ""}`} />
@@ -683,11 +671,11 @@ export default function Home() {
                               </span>
                             </div>
                             <div className="personalizado-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="personalizado-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
+                              <strong className="personalizado-title">
                                 {item.nome}
                               </strong>
-                              <span className="personalizado-price text-xs md:text-sm font-semibold text-[var(--rose-dark)]">
-                                {moeda(item.preco)} <small className="text-[var(--muted)] font-normal">cada</small>
+                              <span className="personalizado-price">
+                                {moeda(item.preco)} <small>cada</small>
                               </span>
                             </div>
                           </div>
@@ -702,7 +690,7 @@ export default function Home() {
                             >
                               －
                             </button>
-                            <span className="qty-value font-bold text-sm min-w-[24px] text-center" aria-live="polite">
+                            <span className="qty-value" aria-live="polite">
                               {qtdNoCarrinho}
                             </span>
                             <button
@@ -737,13 +725,37 @@ export default function Home() {
             {itens.length === 0 ? (
               <div className="empty-cart"><span>♡</span><p>Seu pedido está vazio.</p><small>Escolha um produto ao lado para começar.</small></div>
             ) : (
-              <div className="cart-list">{itens.map((item) => <article key={item.id}><div><strong>{item.quantidade}× {item.titulo}</strong><small>{item.descricao}</small></div><span>{moeda(item.total)}</span><button onClick={() => setItens((atuais) => atuais.filter((atual) => atual.id !== item.id))} aria-label={`Remover ${item.titulo}`}>remover</button></article>)}</div>
+              <div className="cart-list">{itens.map((item) => <article key={item.id}><div><strong>{item.quantidade}× {item.titulo}</strong><small>{item.descricao}</small></div><span>{moeda(item.total)}</span><button className="cart-remove-btn" onClick={() => setItens((atuais) => atuais.filter((atual) => atual.id !== item.id))} aria-label={`Remover ${item.titulo}`}>✕ Remover</button></article>)}</div>
             )}
 
-            <div className="totals">
-              <div><span>Total estimado</span><strong>{moeda(total)}</strong></div>
-              <p><span>Sinal via Pix · 50%</span><b>{moeda(total / 2)}</b></p>
-              <p><span>Na entrega · 50%</span><b>{moeda(total / 2)}</b></p>
+            <div className="totals-card">
+              <div className="totals-header">
+                <div>
+                  <span className="totals-title">Total estimado</span>
+                  <small className="totals-subtitle">Baseado nos itens escolhidos</small>
+                </div>
+                <strong className="totals-amount">{moeda(total)}</strong>
+              </div>
+
+              <div className="payment-split-grid">
+                <div className="split-pill split-pix">
+                  <div className="split-badge-row">
+                    <span className="split-badge pix-badge">Sinal 50% Pix</span>
+                    <span className="split-tag">Para reservar</span>
+                  </div>
+                  <strong className="split-value">{moeda(total / 2)}</strong>
+                  <p className="split-caption">Pague via Pix para confirmar a data</p>
+                </div>
+
+                <div className="split-pill split-delivery">
+                  <div className="split-badge-row">
+                    <span className="split-badge delivery-badge">Restante 50%</span>
+                    <span className="split-tag">Na entrega</span>
+                  </div>
+                  <strong className="split-value">{moeda(total / 2)}</strong>
+                  <p className="split-caption">Pague no recebimento da encomenda</p>
+                </div>
+              </div>
             </div>
 
             <div className="customer-fields">
