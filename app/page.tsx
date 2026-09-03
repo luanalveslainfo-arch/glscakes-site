@@ -46,8 +46,9 @@ function moeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function hoje() {
+function dataMinimaEncomenda() {
   const agora = new Date();
+  agora.setDate(agora.getDate() + configuracao.diasAntecedenciaMinima);
   agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
   return agora.toISOString().slice(0, 10);
 }
@@ -220,6 +221,11 @@ export default function Home() {
     }
     if (!nome.trim() || !data || !horario) {
       setAviso("Preencha seu nome, a data e o horário desejados.");
+      document.querySelector("#finalizar")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    if (data < dataMinimaEncomenda()) {
+      setAviso(`Por favor, selecione uma data com no mínimo ${configuracao.diasAntecedenciaMinima} dias de antecedência.`);
       document.querySelector("#finalizar")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
@@ -761,7 +767,16 @@ export default function Home() {
             <div className="customer-fields">
               <h3>Dados para a encomenda</h3>
               <label>Seu nome<input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como podemos te chamar?" /></label>
-              <div className="form-grid"><label>Data desejada<input type="date" min={hoje()} value={data} onChange={(e) => setData(e.target.value)} /></label><label>Horário<input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} /></label></div>
+              <div className="form-grid">
+                <label>
+                  Data desejada <small>(mín. {configuracao.diasAntecedenciaMinima} dias)</small>
+                  <input type="date" min={dataMinimaEncomenda()} value={data} onChange={(e) => setData(e.target.value)} />
+                </label>
+                <label>
+                  Horário
+                  <input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} />
+                </label>
+              </div>
               <label>Ocasião ou tema <small>opcional</small><input value={ocasiao} onChange={(e) => setOcasiao(e.target.value)} placeholder="Ex.: aniversário, flores rosa..." /></label>
               <label>Observações <small>opcional</small><textarea rows={3} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Escreva detalhes importantes" /></label>
             </div>

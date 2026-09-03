@@ -6,6 +6,7 @@ export const configuracao = {
     whatsappExibicao: "(21) 96499-9184",
     logo: "/glscakes/logo.png",
   },
+  diasAntecedenciaMinima: 2,
   massas: [
     "Chocolate",
     "Baunilha",
