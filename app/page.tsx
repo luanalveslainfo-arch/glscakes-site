@@ -434,14 +434,32 @@ export default function Home() {
                           }`}
                         >
                           <div className="personalizado-info flex items-center gap-3 min-w-0 flex-1">
-                            <img
-                              src={item.imagem}
-                              alt={item.nome}
-                              className="personalizado-thumb w-16 h-16 rounded-xl object-cover flex-shrink-0 shadow-sm"
-                              width={64}
-                              height={64}
-                              loading="lazy"
-                            />
+                            <div
+                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: item.nome });
+                              }}
+                              title="Clique para ampliar a foto"
+                              aria-label={`Ampliar foto de ${item.nome}`}
+                            >
+                              <img
+                                src={item.imagem}
+                                alt={item.nome}
+                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                width={64}
+                                height={64}
+                                loading="lazy"
+                              />
+                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="11" cy="11" r="8"></circle>
+                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                                </svg>
+                              </span>
+                            </div>
                             <div className="personalizado-text flex flex-col justify-center min-w-0 flex-1">
                               <strong className="personalizado-title text-sm md:text-base font-bold text-[var(--ink)] truncate block">
                                 {item.nome}
