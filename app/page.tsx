@@ -1,86 +1,94 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { configuracao, type DocePersonalizadoId, type TamanhoId, type TipoDocinho } from "./configuracao";
+import {
+  configuracao,
+  type DocePersonalizadoId,
+  type TamanhoId,
+} from "./configuracao";
 
-type Categoria = "bento" | "bolo" | "kit" | "docinhos" | "personalizados";
+type Categoria = "cakes" | "cupcakes" | "brownies" | "cakesicles" | "cups" | "treats";
 
-type ItemPedido = {
+type OrderItem = {
   id: string;
-  titulo: string;
-  descricao: string;
-  quantidade: number;
-  unitario: number;
+  title: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
   total: number;
 };
 
-const categorias: { id: Categoria; numero: string; nome: string; resumo: string }[] = [
-  { id: "bento", numero: "01", nome: "Bentô Cakes", resumo: "Pequenos no tamanho, enormes no carinho" },
-  { id: "bolo", numero: "02", nome: "Bolos", resumo: "Monte cada detalhe do seu bolo" },
-  { id: "kit", numero: "03", nome: "Kit Festa", resumo: "A comemoração completa em um pedido" },
-  { id: "docinhos", numero: "04", nome: "Docinhos", resumo: "Tradicionais e gourmet" },
-  { id: "personalizados", numero: "05", nome: "Doces Personalizados", resumo: "Unidades decoradas do seu jeito" },
+const categories: { id: Categoria; number: string; name: string; summary: string; startingAt: string }[] = [
+  { id: "cakes", number: "01", name: "Custom Cakes", summary: "Starting at $85.00", startingAt: "from $85.00" },
+  { id: "cupcakes", number: "02", name: "Cupcakes", summary: "Starting at $35.00/dozen", startingAt: "from $35.00" },
+  { id: "brownies", number: "03", name: "Brownies & Bars", summary: "Starting at $30.00/batch", startingAt: "from $30.00" },
+  { id: "cakesicles", number: "04", name: "Cakesicles", summary: "Starting at $40.00/dozen", startingAt: "from $40.00" },
+  { id: "cups", number: "05", name: "Dessert Cups", summary: "Starting at $45.00", startingAt: "from $45.00" },
+  { id: "treats", number: "06", name: "Themed Treats", summary: "Starting at $50.00", startingAt: "from $50.00" },
 ];
 
-const acabamentos = ["Naked", "Chantininho", "Buttercream"] as const;
-
-const acabamentoConfig: Record<
-  (typeof acabamentos)[number],
-  { imagem: string; detalhe: string }
-> = {
-  Naked: {
-    imagem: "/images/bolos/bolo-naked.jpg",
-    detalhe: "Massa e recheio aparentes com frutas frescas",
-  },
-  Chantininho: {
-    imagem: "/images/bolos/bolo-chantininho.jpg",
-    detalhe: "Cobertura cremosa e clássica de Ninho",
-  },
-  Buttercream: {
-    imagem: "/images/bolos/bolo-buttercream.jpg",
-    detalhe: "Creme aveludado com acabamento liso refinado",
-  },
-};
-
-function moeda(valor: number) {
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+function formatCurrency(val: number): string {
+  return val.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
-function dataMinimaEncomenda() {
-  const agora = new Date();
-  agora.setDate(agora.getDate() + configuracao.diasAntecedenciaMinima);
-  agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
-  return agora.toISOString().slice(0, 10);
+function getMinOrderDate(): string {
+  const date = new Date();
+  date.setDate(date.getDate() + configuracao.diasAntecedenciaMinima);
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
 }
 
 export default function Home() {
-  const [categoria, setCategoria] = useState<Categoria>("bento");
-  const [quantidade, setQuantidade] = useState(1);
-  const [bentoId, setBentoId] = useState<string>(configuracao.bento[0].id);
-  const [kitId, setKitId] = useState<string>(configuracao.kits[0].id);
-  const [tamanhoId, setTamanhoId] = useState<TamanhoId>("pp");
-  const [acabamento, setAcabamento] = useState<(typeof acabamentos)[number]>("Chantininho");
-  const [massa, setMassa] = useState<string>(configuracao.massas[0]);
-  const [recheio, setRecheio] = useState<string>(configuracao.recheios[0]);
-  const [recheio2, setRecheio2] = useState("");
-  const [adicionais, setAdicionais] = useState<string[]>([]);
-  const [tipoDocinho, setTipoDocinho] = useState<TipoDocinho>("tradicionais");
-  const [qtdDocinhos, setQtdDocinhos] = useState<25 | 50 | 100>(25);
-  const [saborDocinho, setSaborDocinho] = useState<string>(configuracao.docinhos.tradicionais.sabores[0]);
-  const [docePersonalizadoId, setDocePersonalizadoId] = useState<DocePersonalizadoId>(configuracao.docesPersonalizados[0].id);
-  const [itens, setItens] = useState<ItemPedido[]>([]);
-  const [nome, setNome] = useState("");
-  const [data, setData] = useState("");
-  const [horario, setHorario] = useState("");
-  const [ocasiao, setOcasiao] = useState("");
-  const [observacoes, setObservacoes] = useState("");
-  const [aviso, setAviso] = useState("");
-  const [modalImagem, setModalImagem] = useState<{ src: string; alt: string; titulo: string } | null>(null);
+  const [activeCategory, setActiveCategory] = useState<Categoria>("cakes");
+  const [quantity, setQuantity] = useState(1);
 
+  // 1. Custom Cakes State
+  const [cakeSizeId, setCakeSizeId] = useState<TamanhoId>("6in");
+  const [cakeFinishId, setCakeFinishId] = useState<string>(configuracao.acabamentos[0].id);
+  const [cakeSponge, setCakeSponge] = useState<string>(configuracao.massas[0]);
+  const [cakeFilling, setCakeFilling] = useState<string>(configuracao.recheios[0]);
+  const [cakeFilling2, setCakeFilling2] = useState<string>("");
+  const [cakeExtras, setCakeExtras] = useState<string[]>([]);
+
+  // 2. Cupcakes State
+  const [cupcakePackId, setCupcakePackId] = useState<string>(configuracao.cupcakes[0].id);
+  const [cupcakeFlavor, setCupcakeFlavor] = useState<string>(configuracao.saboresCupcake[0]);
+  const [cupcakeFlavor2, setCupcakeFlavor2] = useState<string>("");
+  const [cupcakeFondantDiscs, setCupcakeFondantDiscs] = useState(false);
+
+  // 3. Brownies & Bars State
+  const [browniePackId, setBrowniePackId] = useState<string>(configuracao.brownies[0].id);
+  const [brownieFlavor, setBrownieFlavor] = useState<string>(configuracao.saboresBrownies[0]);
+  const [brownieFlavor2, setBrownieFlavor2] = useState<string>("");
+
+  // 4. Cakesicles State
+  const [cakesiclePackId, setCakesiclePackId] = useState<string>(configuracao.cakesicles[0].id);
+  const [cakesicleStyle, setCakesicleStyle] = useState<string>(configuracao.estilosCakesicles[0]);
+  const [cakesicleFlavor, setCakesicleFlavor] = useState<string>("Signature Vanilla");
+
+  // 5. Dessert Cups State
+  const [cupCount, setCupCount] = useState<12 | 24 | 36>(12);
+  const [cupFlavor, setCupFlavor] = useState<string>(configuracao.dessertCups.sabores[0]);
+  const [cupFlavor2, setCupFlavor2] = useState<string>("");
+
+  // 6. Themed Desserts / Treats State
+  const [treatId, setTreatId] = useState<DocePersonalizadoId>(configuracao.docesPersonalizados[0].id);
+
+  // Cart & Customer Details
+  const [cartItems, setCartItems] = useState<OrderItem[]>([]);
+  const [customerName, setCustomerName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [eventOccasion, setEventOccasion] = useState("");
+  const [specialNotes, setSpecialNotes] = useState("");
+  const [userNotice, setUserNotice] = useState("");
+  const [modalImage, setModalImage] = useState<{ src: string; alt: string; title: string } | null>(null);
+
+  // Modal ESC listener & scroll lock
   useEffect(() => {
-    if (!modalImagem) return;
+    if (!modalImage) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setModalImagem(null);
+      if (e.key === "Escape") setModalImage(null);
     };
     window.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
@@ -88,374 +96,557 @@ export default function Home() {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [modalImagem]);
+  }, [modalImage]);
 
-  const tamanho = configuracao.bolos.find((item) => item.id === tamanhoId)!;
-  const precoBaseBolo = acabamento === "Naked" ? tamanho.naked : tamanho.decorado;
-  const valorAdicionais = configuracao.adicionais
-    .filter((item) => adicionais.includes(item.nome))
-    .reduce((total, item) => total + (item.precos[tamanhoId] ?? 0), 0);
-  const precoBolo = precoBaseBolo + valorAdicionais;
-  const total = useMemo(() => itens.reduce((soma, item) => soma + item.total, 0), [itens]);
+  // Cake Price Calculation
+  const selectedSize = configuracao.bolos.find((b) => b.id === cakeSizeId)!;
+  const selectedFinish = configuracao.acabamentos.find((f) => f.id === cakeFinishId)!;
+  const cakeBasePrice = selectedSize.decorado + (selectedFinish?.extra ?? 0);
+  const cakeExtrasPrice = configuracao.adicionais
+    .filter((extra) => cakeExtras.includes(extra.nome))
+    .reduce((sum, extra) => sum + (extra.precos[cakeSizeId] ?? 0), 0);
+  const totalCakePrice = cakeBasePrice + cakeExtrasPrice;
 
-  function trocarCategoria(nova: Categoria) {
-    setCategoria(nova);
-    setQuantidade(1);
-    setAviso("");
+  // Total cart calculation
+  const cartTotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.total, 0), [cartItems]);
+
+  function switchCategory(cat: Categoria) {
+    setActiveCategory(cat);
+    setQuantity(1);
+    setUserNotice("");
   }
 
-  function alternarAdicional(nomeAdicional: string) {
-    setAdicionais((atuais) =>
-      atuais.includes(nomeAdicional)
-        ? atuais.filter((item) => item !== nomeAdicional)
-        : [...atuais, nomeAdicional],
+  function toggleCakeExtra(extraName: string) {
+    setCakeExtras((current) =>
+      current.includes(extraName) ? current.filter((e) => e !== extraName) : [...current, extraName]
     );
   }
 
-  function criarItem(): ItemPedido {
-    const id = `${categoria}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  function createOrderItem(): OrderItem {
+    const id = `${activeCategory}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-    if (categoria === "bento") {
-      const produto = configuracao.bento.find((item) => item.id === bentoId)!;
-      return { id, titulo: produto.nome, descricao: produto.detalhe, quantidade, unitario: produto.preco, total: produto.preco * quantidade };
-    }
-
-    if (categoria === "kit") {
-      const produto = configuracao.kits.find((item) => item.id === kitId)!;
-      return { id, titulo: produto.nome, descricao: produto.detalhe, quantidade, unitario: produto.preco, total: produto.preco * quantidade };
-    }
-
-    if (categoria === "docinhos") {
-      const linha = configuracao.docinhos[tipoDocinho];
-      const preco = linha.precos[qtdDocinhos];
+    if (activeCategory === "cakes") {
+      const finishDesc = `Style: ${selectedFinish.nome}`;
+      const fillingsDesc = cakeFilling2
+        ? `Fillings: ${cakeFilling} & ${cakeFilling2}`
+        : `Filling: ${cakeFilling}`;
+      const extrasDesc = cakeExtras.length ? ` · Add-ons: ${cakeExtras.join(", ")}` : "";
       return {
         id,
-        titulo: `Docinhos ${linha.nome} — ${qtdDocinhos} un`,
-        descricao: `Sabor: ${saborDocinho}`,
-        quantidade,
-        unitario: preco,
-        total: preco * quantidade,
+        title: `Custom Cake — ${selectedSize.tamanho} (${selectedSize.diametro})`,
+        description: `${selectedSize.fatias} · ${finishDesc} · Sponge: ${cakeSponge} · ${fillingsDesc}${extrasDesc}`,
+        quantity,
+        unitPrice: totalCakePrice,
+        total: totalCakePrice * quantity,
       };
     }
 
-    if (categoria === "personalizados") {
-      const produto = configuracao.docesPersonalizados.find((item) => item.id === docePersonalizadoId)!;
+    if (activeCategory === "cupcakes") {
+      const pack = configuracao.cupcakes.find((c) => c.id === cupcakePackId)!;
+      const extraDiscPrice = cupcakeFondantDiscs ? 10 : 0;
+      const unit = pack.preco + extraDiscPrice;
+      const flavors = cupcakeFlavor2 ? `Flavors: ${cupcakeFlavor} & ${cupcakeFlavor2}` : `Flavor: ${cupcakeFlavor}`;
+      const topperDesc = cupcakeFondantDiscs ? " · Custom Fondant Disc Toppers Included" : "";
       return {
         id,
-        titulo: produto.nome,
-        descricao: "Doce personalizado por unidade",
-        quantidade,
-        unitario: produto.preco,
-        total: produto.preco * quantidade,
+        title: pack.nome,
+        description: `${flavors}${topperDesc}`,
+        quantity,
+        unitPrice: unit,
+        total: unit * quantity,
       };
     }
 
-    const extras = adicionais.length ? ` · Adicionais: ${adicionais.join(", ")}` : "";
-    const segundo = recheio2 ? ` + ${recheio2}` : "";
+    if (activeCategory === "brownies") {
+      const pack = configuracao.brownies.find((b) => b.id === browniePackId)!;
+      const flavors = brownieFlavor2 ? `Flavors: ${brownieFlavor} & ${brownieFlavor2}` : `Flavor: ${brownieFlavor}`;
+      return {
+        id,
+        title: pack.nome,
+        description: flavors,
+        quantity,
+        unitPrice: pack.preco,
+        total: pack.preco * quantity,
+      };
+    }
+
+    if (activeCategory === "cakesicles") {
+      const pack = configuracao.cakesicles.find((c) => c.id === cakesiclePackId)!;
+      return {
+        id,
+        title: pack.nome,
+        description: `Style: ${cakesicleStyle} · Cake Flavor: ${cakesicleFlavor}`,
+        quantity,
+        unitPrice: pack.preco,
+        total: pack.preco * quantity,
+      };
+    }
+
+    if (activeCategory === "cups") {
+      const price = configuracao.dessertCups.precos[cupCount];
+      const flavors = cupFlavor2 ? `Flavors: ${cupFlavor} & ${cupFlavor2}` : `Flavor: ${cupFlavor}`;
+      return {
+        id,
+        title: `Dessert Cups & Shooters — ${cupCount} pcs`,
+        description: `${flavors} · Includes mini dessert spoons`,
+        quantity,
+        unitPrice: price,
+        total: price * quantity,
+      };
+    }
+
+    const treat = configuracao.docesPersonalizados.find((t) => t.id === treatId)!;
     return {
       id,
-      titulo: `Bolo ${tamanho.tamanho} — ${tamanho.diametro}`,
-      descricao: `${tamanho.fatias} · ${acabamento} · Massa ${massa} · Recheio ${recheio}${segundo}${extras}`,
-      quantidade,
-      unitario: precoBolo,
-      total: precoBolo * quantidade,
+      title: treat.nome,
+      description: treat.detalhe,
+      quantity,
+      unitPrice: treat.preco,
+      total: treat.preco * quantity,
     };
   }
 
-  function adicionar() {
-    const item = criarItem();
-    setItens((atuais) => [...atuais, item]);
-    setAviso(`${item.titulo} foi adicionado ao pedido.`);
-    window.setTimeout(() => setAviso(""), 3200);
+  function handleAddToCart() {
+    const item = createOrderItem();
+    setCartItems((curr) => [...curr, item]);
+    setUserNotice(`"${item.title}" added to your order!`);
+    setTimeout(() => setUserNotice(""), 3500);
   }
 
-  function alterarQtdPersonalizado(produto: (typeof configuracao.docesPersonalizados)[number], delta: number) {
-    setItens((atuais) => {
-      const index = atuais.findIndex((it) => it.titulo === produto.nome);
-      if (index === -1) {
-        if (delta <= 0) return atuais;
-        const novoItem: ItemPedido = {
-          id: `personalizado-${produto.id}-${Date.now()}`,
-          titulo: produto.nome,
-          descricao: "Doce personalizado por unidade",
-          quantidade: delta,
-          unitario: produto.preco,
-          total: produto.preco * delta,
+  function handleStepperChange(product: (typeof configuracao.docesPersonalizados)[number], delta: number) {
+    setCartItems((curr) => {
+      const idx = curr.findIndex((it) => it.title === product.nome);
+      if (idx === -1) {
+        if (delta <= 0) return curr;
+        const newItem: OrderItem = {
+          id: `treat-${product.id}-${Date.now()}`,
+          title: product.nome,
+          description: product.detalhe,
+          quantity: delta,
+          unitPrice: product.preco,
+          total: product.preco * delta,
         };
-        setAviso(`${produto.nome} foi adicionado ao pedido.`);
-        window.setTimeout(() => setAviso(""), 3200);
-        return [...atuais, novoItem];
+        setUserNotice(`"${product.nome}" added to your order!`);
+        setTimeout(() => setUserNotice(""), 3200);
+        return [...curr, newItem];
       }
 
-      const itemAtual = atuais[index];
-      const novaQtd = itemAtual.quantidade + delta;
+      const existing = curr[idx];
+      const newQty = existing.quantity + delta;
 
-      if (novaQtd <= 0) {
-        setAviso(`${produto.nome} foi removido do pedido.`);
-        window.setTimeout(() => setAviso(""), 3200);
-        return atuais.filter((_, i) => i !== index);
+      if (newQty <= 0) {
+        setUserNotice(`"${product.nome}" removed from your order.`);
+        setTimeout(() => setUserNotice(""), 3200);
+        return curr.filter((_, i) => i !== idx);
       }
 
-      const atualizado: ItemPedido = {
-        ...itemAtual,
-        quantidade: novaQtd,
-        total: itemAtual.unitario * novaQtd,
+      const updated: OrderItem = {
+        ...existing,
+        quantity: newQty,
+        total: existing.unitPrice * newQty,
       };
-
-      const novos = [...atuais];
-      novos[index] = atualizado;
-      return novos;
+      const clone = [...curr];
+      clone[idx] = updated;
+      return clone;
     });
   }
 
-  function mudarTipoDocinho(tipo: TipoDocinho) {
-    setTipoDocinho(tipo);
-    setSaborDocinho(configuracao.docinhos[tipo].sabores[0]);
-  }
-
-  function enviarWhatsApp() {
-    if (!itens.length) {
-      setAviso("Adicione pelo menos um item ao pedido.");
-      document.querySelector("#monte-seu-pedido")?.scrollIntoView({ behavior: "smooth" });
+  function handleSendWhatsApp() {
+    if (!cartItems.length) {
+      setUserNotice("Please add at least one item to your order before proceeding.");
+      document.querySelector("#build-order")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    if (!nome.trim() || !data || !horario) {
-      setAviso("Preencha seu nome, a data e o horário desejados.");
-      document.querySelector("#finalizar")?.scrollIntoView({ behavior: "smooth" });
+    if (!customerName.trim() || !eventDate || !eventTime) {
+      setUserNotice("Please fill in your name, event date, and desired pickup/delivery time.");
+      document.querySelector("#checkout-section")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    if (data < dataMinimaEncomenda()) {
-      setAviso(`Por favor, selecione uma data com no mínimo ${configuracao.diasAntecedenciaMinima} dias de antecedência.`);
-      document.querySelector("#finalizar")?.scrollIntoView({ behavior: "smooth" });
+    if (eventDate < getMinOrderDate()) {
+      setUserNotice(`Orders require at least ${configuracao.diasAntecedenciaMinima} days advance notice. Please select a later date.`);
+      document.querySelector("#checkout-section")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
 
-    const linhas = itens.flatMap((item, index) => [
-      `*${index + 1}. ${item.titulo}*`,
-      item.descricao,
-      `Quantidade: ${item.quantidade} · ${moeda(item.total)}`,
+    const itemLines = cartItems.flatMap((item, idx) => [
+      `*${idx + 1}. ${item.title}*`,
+      item.description,
+      `Qty: ${item.quantity} · ${formatCurrency(item.total)}`,
       "",
     ]);
-    const sinal = total / 2;
-    const mensagem = [
-      "*NOVO PEDIDO — GLSCAKES* 🎂",
-      "",
-      `*Cliente:* ${nome.trim()}`,
-      `*Data desejada:* ${new Date(`${data}T12:00:00`).toLocaleDateString("pt-BR")}`,
-      `*Horário:* ${horario}`,
-      ocasiao.trim() ? `*Ocasião/tema:* ${ocasiao.trim()}` : "",
-      "",
-      "*ITENS DO PEDIDO*",
-      ...linhas,
-      `*TOTAL ESTIMADO: ${moeda(total)}*`,
-      `*Sinal via Pix (50%): ${moeda(sinal)}*`,
-      `*Saldo na entrega (50%): ${moeda(sinal)}*`,
-      "",
-      observacoes.trim() ? `*Observações:* ${observacoes.trim()}` : "",
-      "",
-      "Entendo que a encomenda será confirmada após o pagamento do sinal de 50%.",
-    ].filter(Boolean).join("\n");
 
-    window.open(`https://wa.me/${configuracao.marca.whatsapp}?text=${encodeURIComponent(mensagem)}`, "_blank", "noopener,noreferrer");
+    const deposit = cartTotal / 2;
+    const balance = cartTotal - deposit;
+    const formattedDate = new Date(`${eventDate}T12:00:00`).toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+    const messageLines = [
+      "Hi Narmatha! I'd like to place an order from your interactive menu:",
+      "",
+      `*Customer Name:* ${customerName.trim()}`,
+      `*Event / Delivery Date:* ${formattedDate}`,
+      `*Time:* ${eventTime}`,
+      eventOccasion.trim() ? `*Occasion / Theme:* ${eventOccasion.trim()}` : "",
+      "",
+      "*SELECTED ITEMS:*",
+      ...itemLines,
+      `*ESTIMATED TOTAL: ${formatCurrency(cartTotal)}*`,
+      `*50% Deposit to Reserve: ${formatCurrency(deposit)}*`,
+      `*50% Balance on Delivery: ${formatCurrency(balance)}*`,
+      "",
+      specialNotes.trim() ? `*Design Notes / Dietary Requests:* ${specialNotes.trim()}` : "",
+      "",
+      "I understand that custom orders are confirmed once the 50% deposit is completed.",
+      "Thank you! Looking forward to celebrating with Home Treats by Narmatha. ✨",
+    ].filter(Boolean);
+
+    const messageText = messageLines.join("\n");
+    const waUrl = `https://wa.me/${configuracao.marca.whatsapp}?text=${encodeURIComponent(messageText)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
     <main>
+      {/* ----------------- TOPBAR ----------------- */}
       <header className="topbar">
-        <a className="brand" href="#inicio" aria-label="Glscakes — início">
-          <img src={configuracao.marca.logo} alt="Logo Glscakes" />
-          <span><strong>Glscakes</strong><small>Confeitaria artesanal</small></span>
+        <a className="brand" href="#top" aria-label="Home Treats by Narmatha — Home">
+          <img src={configuracao.marca.logo} alt="Home Treats by Narmatha Logo" />
+          <span>
+            <strong>
+              Home Treats<span>by Narmatha</span>
+            </strong>
+            <small>{configuracao.marca.local}</small>
+          </span>
         </a>
-        <a className="top-whatsapp" href={`https://wa.me/${configuracao.marca.whatsapp}`} target="_blank" rel="noreferrer">Falar no WhatsApp</a>
+
+        <div className="top-actions">
+          <a
+            className="top-instagram"
+            href={configuracao.marca.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Follow on Instagram"
+          >
+            <span>📷</span>
+            <span>@{configuracao.marca.instagram}</span>
+          </a>
+          <a
+            className="top-whatsapp"
+            href={`https://wa.me/${configuracao.marca.whatsapp}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>💬</span>
+            <span>{configuracao.marca.telefoneExibicao}</span>
+          </a>
+        </div>
       </header>
 
-      <section className="hero" id="inicio">
+      {/* ----------------- HERO ----------------- */}
+      <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow">Feito à mão no Rio de Janeiro</p>
-          <h1>Doces momentos,<br /><em>feitos para você.</em></h1>
-          <p className="hero-text">Bentôs, bolos personalizados, kits festa e docinhos preparados com carinho para deixar sua celebração ainda mais especial.</p>
-          <div className="hero-actions">
-            <a className="button primary" href="#monte-seu-pedido">Montar meu pedido <span>→</span></a>
-            <a className="button ghost" href="#cardapio">Ver cardápio</a>
+          <div className="eyebrow">
+            <span className="eyebrow-badge">✨ Handcrafted in Frisco, TX</span>
           </div>
-          <div className="payment-pill"><span>◆</span><p><strong>Reserva com 50% via Pix</strong><small>Os outros 50% são pagos na entrega</small></p></div>
+          <h1>
+            Custom Cakes for<br />
+            <em>Every Occasion!</em>
+          </h1>
+          <p className="hero-text">
+            Made Fresh · Made with Love · Fully Customizable. From intimate birthday cakes to breathtaking multi-tiered
+            celebration centerpieces and dessert stations for Frisco & surrounding areas.
+          </p>
+
+          <div className="hero-actions">
+            <a className="button primary" href="#build-order">
+              Build Your Order <span>→</span>
+            </a>
+            <a className="button ghost" href="#dessert-options">
+              View Dessert Options
+            </a>
+          </div>
+
+          <div className="payment-pill">
+            <span>◆</span>
+            <p>
+              <strong>50% Deposit to Reserve Your Date</strong>
+              <small>Remaining 50% balance paid upon delivery or pickup</small>
+            </p>
+          </div>
         </div>
-        <div className="hero-gallery" aria-label="Produtos Glscakes">
-          <figure className="hero-photo hero-photo-main"><img src="/glscakes/bolo-personalizado.png" alt="Bolo personalizado Glscakes com tema Homem-Aranha" /></figure>
-          <figure className="hero-photo hero-photo-small"><img src="/glscakes/bento.png" alt="Bentô cake personalizado Glscakes" /></figure>
-          <span className="hero-seal">feito com<br /><strong>amor</strong> ♡</span>
+
+        <div className="hero-gallery" aria-label="Home Treats Custom Cakes Showcase">
+          <figure
+            className="hero-photo hero-photo-main cursor-pointer"
+            onClick={() =>
+              setModalImage({
+                src: "/hometreats/cake-anniversary.png",
+                alt: "10th Anniversary Custom Cake with Red Roses and Gold Hearts",
+                title: "10th Anniversary Custom Cake with Red Roses & Gold Details",
+              })
+            }
+            title="Click to view full photo"
+          >
+            <img
+              src="/hometreats/cake-anniversary.png"
+              alt="10th Anniversary Custom Cake by Home Treats"
+            />
+          </figure>
+
+          <figure
+            className="hero-photo hero-photo-small cursor-pointer"
+            onClick={() =>
+              setModalImage({
+                src: "/hometreats/cake-pooh.png",
+                alt: "Winnie the Pooh Custom Baby Shower Cake",
+                title: 'Winnie the Pooh 2-Tier Cake — "Our Little Honey is on the Way"',
+              })
+            }
+            title="Click to view full photo"
+          >
+            <img
+              src="/hometreats/cake-pooh.png"
+              alt="Winnie the Pooh themed custom cake by Home Treats"
+            />
+          </figure>
+
+          <span className="hero-seal">
+            Baked with<br />
+            <strong>Love</strong> ♡
+          </span>
         </div>
       </section>
 
-      <section className="catalog-intro" id="cardapio">
-        <div><p className="eyebrow">Nosso cardápio</p><h2>Escolha o doce<br />do seu momento</h2></div>
-        <p>Produtos artesanais, montados do seu jeito. Escolha uma categoria e personalize seu pedido em poucos passos.</p>
+      {/* ----------------- PILLARS BAR ----------------- */}
+      <div className="pillars-bar">
+        <div className="pillar-card">
+          <div className="pillar-icon">🎂</div>
+          <div className="pillar-text">
+            <strong>Custom Designs & Themes</strong>
+            <small>Personalized to your unique vision</small>
+          </div>
+        </div>
+        <div className="pillar-card">
+          <div className="pillar-icon">✨</div>
+          <div className="pillar-text">
+            <strong>Freshly Baked to Order</strong>
+            <small>100% premium ingredients</small>
+          </div>
+        </div>
+        <div className="pillar-card">
+          <div className="pillar-icon">🌿</div>
+          <div className="pillar-text">
+            <strong>Gluten-Free & Eggless</strong>
+            <small>Dietary options gladly accommodated</small>
+          </div>
+        </div>
+        <div className="pillar-card">
+          <div className="pillar-icon">📍</div>
+          <div className="pillar-text">
+            <strong>Frisco & Surrounding Areas</strong>
+            <small>Local custom cake specialist</small>
+          </div>
+        </div>
+      </div>
+
+      {/* ----------------- DESSERT SHOWCASE ----------------- */}
+      <section className="catalog-intro" id="dessert-options">
+        <div>
+          <p className="eyebrow">Interactive Menu</p>
+          <h2>
+            Dessert Options &<br />
+            <em>Custom Stations</em>
+          </h2>
+        </div>
+        <p>
+          Explore Narmatha&apos;s specialty offerings. Select your favorite category below to customize flavors, sizes, fillings, and decorative themes.
+        </p>
       </section>
 
       <section className="showcase-grid">
-        <article className="showcase-card showcase-bento"><div><span>01</span><h3>Bentô Cakes</h3><p>A partir de <strong>R$ 45</strong></p></div><img src="/glscakes/bento.png" alt="Bentô cake branco decorado" /></article>
-        <article className="showcase-card showcase-cake"><div><span>02</span><h3>Bolos</h3><p>A partir de <strong>R$ 160</strong></p></div><img src="/glscakes/bolo-personalizado.png" alt="Bolo personalizado em dois andares" /></article>
-        <article className="showcase-card showcase-sweets"><div><span>03</span><h3>Docinhos</h3><p>A partir de <strong>R$ 50</strong></p></div><img src="/glscakes/docinhos.png" alt="Caixas com docinhos Glscakes" /></article>
+        <article
+          className="showcase-card"
+          onClick={() => {
+            switchCategory("cakes");
+            document.querySelector("#build-order")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          <div>
+            <span>01 · SIGNATURE</span>
+            <h3>Custom Cakes</h3>
+            <p>Starting at <strong>$85.00</strong></p>
+          </div>
+          <img src="/hometreats/cake-balloon.png" alt="Hot Air Balloon and Teddy Bear Custom 1st Birthday Cake" />
+        </article>
+
+        <article
+          className="showcase-card"
+          onClick={() => {
+            switchCategory("cupcakes");
+            document.querySelector("#build-order")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          <div>
+            <span>02 · GOURMET</span>
+            <h3>Cupcakes</h3>
+            <p>Starting at <strong>$35.00 / doz</strong></p>
+          </div>
+          <img src="/images/personalizados/mini-cupcakes.jpg" alt="Artisan Cupcakes with Buttercream Swirls" />
+        </article>
+
+        <article
+          className="showcase-card"
+          onClick={() => {
+            switchCategory("cakesicles");
+            document.querySelector("#build-order")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          <div>
+            <span>03 · ARTISAN</span>
+            <h3>Cakesicles</h3>
+            <p>Starting at <strong>$40.00 / doz</strong></p>
+          </div>
+          <img src="/images/personalizados/popsicle-sonic.jpg" alt="Chocolate Dipped Cakesicles" />
+        </article>
+
+        <article
+          className="showcase-card"
+          onClick={() => {
+            switchCategory("cups");
+            document.querySelector("#build-order")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          <div>
+            <span>04 · STATIONS</span>
+            <h3>Dessert Cups</h3>
+            <p>Starting at <strong>$45.00</strong></p>
+          </div>
+          <img src="/hometreats/flyer-desserts.png" alt="Dessert Station Treat Cups and Macarons" />
+        </article>
       </section>
 
-      <section className="builder-section" id="monte-seu-pedido">
-        <div className="section-title"><p className="eyebrow">Do seu jeito</p><h2>Monte seu pedido</h2><p>Escolha a categoria, personalize e adicione quantos itens quiser.</p></div>
+      {/* ----------------- BUILD YOUR ORDER SECTION ----------------- */}
+      <section className="builder-section" id="build-order">
+        <div className="section-title">
+          <p className="eyebrow">Custom Order Builder</p>
+          <h2>Build Your Order</h2>
+          <p>
+            Choose your dessert category, pick your favorite style and flavors, and add as many items as you would like for your event.
+          </p>
+        </div>
 
         <div className="builder-layout">
+          {/* Builder Card */}
           <div className="builder-card">
-            <nav className="category-tabs" aria-label="Categorias do cardápio">
-              {categorias.map((item) => (
-                <button key={item.id} className={categoria === item.id ? "active" : ""} onClick={() => trocarCategoria(item.id)}>
-                  <span>{item.numero}</span><strong>{item.nome}</strong><small>{item.resumo}</small>
+            {/* 6 Category Tabs */}
+            <nav className="category-tabs" aria-label="Dessert Categories">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  className={activeCategory === cat.id ? "active" : ""}
+                  onClick={() => switchCategory(cat.id)}
+                >
+                  <span>{cat.number}</span>
+                  <strong>{cat.name}</strong>
+                  <small>{cat.summary}</small>
                 </button>
               ))}
             </nav>
 
             <div className="config-panel">
-              {categoria === "bento" && (
+              {/* CATEGORY 1: CUSTOM CAKES */}
+              {activeCategory === "cakes" && (
                 <>
-                  <div className="panel-heading"><span>01</span><div><h3>Escolha seu Bentô</h3><p>Ideal para presentear ou comemorar de um jeito íntimo.</p></div></div>
-                  <div className="bento-list">
-                    {configuracao.bento.map((item) => {
-                      const isSelected = bentoId === item.id;
-                      return (
-                        <div
-                          key={item.id}
-                          className={`bento-card ${isSelected ? "active" : ""}` }
-                          onClick={() => setBentoId(item.id)}
-                          role="radio"
-                          aria-checked={isSelected}
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setBentoId(item.id);
-                            }
-                          }}
-                        >
-                          <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
-                            <div
-                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: item.nome });
-                              }}
-                              title="Clique para ampliar a foto"
-                              aria-label={`Ampliar foto de ${item.nome}`}
-                            >
-                              <img
-                                src={item.imagem}
-                                alt={item.nome}
-                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                                width={64}
-                                height={64}
-                                loading="lazy"
-                              />
-                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="11" cy="11" r="8"></circle>
-                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                  <line x1="11" y1="8" x2="11" y2="14"></line>
-                                  <line x1="8" y1="11" x2="14" y2="11"></line>
-                                </svg>
-                              </span>
-                            </div>
-
-                            <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="bento-title">
-                                {item.nome}
-                              </strong>
-                              <small className="bento-detail">
-                                {item.detalhe}
-                              </small>
-                            </div>
-                          </div>
-
-                          <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                            <b className="bento-price">
-                              {moeda(item.preco)}
-                            </b>
-                            <span className={`radio ${isSelected ? "selected" : ""}`} />
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="panel-heading">
+                    <span>01</span>
+                    <div>
+                      <h3>Design Your Custom Cake</h3>
+                      <p>Select size, signature finish style, sponge flavor, fillings, and special dietary add-ons.</p>
+                    </div>
                   </div>
-                </>
-              )}
 
-              {categoria === "bolo" && (
-                <>
-                  <div className="panel-heading"><span>02</span><div><h3>Monte seu bolo</h3><p>Escolha tamanho, acabamento, massa, recheio e adicionais.</p></div></div>
-                  <fieldset><legend>1. Tamanho</legend><div className="size-options">
-                    {configuracao.bolos.map((item) => (
-                      <button key={item.id} className={tamanhoId === item.id ? "size selected" : "size"} onClick={() => { setTamanhoId(item.id); setAdicionais((atuais) => atuais.filter((nomeExtra) => configuracao.adicionais.find((extra) => extra.nome === nomeExtra)?.precos[item.id] != null)); }}>
-                        <strong>{item.tamanho}</strong><span>{item.diametro}</span><small>{item.fatias}</small>
-                      </button>
-                    ))}
-                  </div></fieldset>
-                  <fieldset><legend>2. Acabamento</legend>
+                  {/* 1. Size Selection */}
+                  <fieldset>
+                    <legend>1. Select Cake Size & Tier</legend>
+                    <div className="size-options">
+                      {configuracao.bolos.map((size) => (
+                        <button
+                          key={size.id}
+                          type="button"
+                          className={cakeSizeId === size.id ? "size selected" : "size"}
+                          onClick={() => setCakeSizeId(size.id)}
+                        >
+                          <strong>{size.tamanho}</strong>
+                          <span>{size.diametro}</span>
+                          <small>{size.fatias}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  {/* 2. Signature Finishes & Themes with Real Photos */}
+                  <fieldset>
+                    <legend>2. Cake Style & Theme</legend>
                     <div className="acabamento-list">
-                      {acabamentos.map((item) => {
-                        const isSelected = acabamento === item;
-                        const precoAcabamento = item === "Naked" ? tamanho.naked : tamanho.decorado;
-                        const config = acabamentoConfig[item];
+                      {configuracao.acabamentos.map((finish) => {
+                        const isSelected = cakeFinishId === finish.id;
                         return (
                           <div
-                            key={item}
-                            className={`acabamento-card ${isSelected ? "active" : ""}` }
-                            onClick={() => setAcabamento(item)}
+                            key={finish.id}
+                            className={`acabamento-card ${isSelected ? "active" : ""}`}
+                            onClick={() => setCakeFinishId(finish.id)}
                             role="radio"
                             aria-checked={isSelected}
                             tabIndex={0}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                setAcabamento(item);
+                                setCakeFinishId(finish.id);
                               }
                             }}
                           >
-                            <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                            <div className="bento-info">
                               <div
-                                className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                                className="bento-thumb-container"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setModalImagem({ src: config.imagem, alt: `Bolo Acabamento ${item}`, titulo: `Bolo — Acabamento ${item}` });
+                                  setModalImage({
+                                    src: finish.imagem,
+                                    alt: finish.nome,
+                                    title: finish.nome,
+                                  });
                                 }}
-                                title="Clique para ampliar a foto"
-                                aria-label={`Ampliar foto do acabamento ${item}`}
+                                title="Click to view larger photo"
+                                aria-label={`View larger photo of ${finish.nome}`}
                               >
                                 <img
-                                  src={config.imagem}
-                                  alt={`Bolo ${item}`}
-                                  className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                                  src={finish.imagem}
+                                  alt={finish.nome}
                                   width={64}
                                   height={64}
                                   loading="lazy"
                                 />
-                                <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <span className="zoom-badge">
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    <line x1="11" y1="8" x2="11" y2="14"></line>
-                                    <line x1="8" y1="11" x2="14" y2="11"></line>
                                   </svg>
                                 </span>
                               </div>
 
-                              <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                                <strong className="bento-title">
-                                  {item}
-                                </strong>
-                                <small className="bento-detail">
-                                  {config.detalhe}
-                                </small>
+                              <div className="bento-text">
+                                <strong className="bento-title">{finish.nome}</strong>
+                                <small className="bento-detail">{finish.detalhe}</small>
                               </div>
                             </div>
 
-                            <div className="bento-right flex items-center gap-3 flex-shrink-0">
+                            <div className="bento-right">
                               <b className="bento-price">
-                                {moeda(precoAcabamento)}
+                                {formatCurrency(selectedSize.decorado + finish.extra)}
                               </b>
                               <span className={`radio ${isSelected ? "selected" : ""}`} />
                             </div>
@@ -464,163 +655,114 @@ export default function Home() {
                       })}
                     </div>
                   </fieldset>
+
+                  {/* 3 & 4. Cake Flavors & Fillings */}
                   <div className="form-grid">
-                    <label>3. Massa<select value={massa} onChange={(e) => setMassa(e.target.value)}>{configuracao.massas.map((item) => <option key={item}>{item}</option>)}</select></label>
-                    <label>4. Recheio principal<select value={recheio} onChange={(e) => setRecheio(e.target.value)}>{configuracao.recheios.map((item) => <option key={item}>{item}</option>)}</select></label>
-                    <label>Segundo recheio <small>opcional</small><select value={recheio2} onChange={(e) => setRecheio2(e.target.value)}><option value="">Não adicionar</option>{configuracao.recheios.filter((item) => item !== recheio).map((item) => <option key={item}>{item}</option>)}</select></label>
+                    <label>
+                      3. Sponge Flavor
+                      <select value={cakeSponge} onChange={(e) => setCakeSponge(e.target.value)}>
+                        {configuracao.massas.map((sponge) => (
+                          <option key={sponge} value={sponge}>{sponge}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      4. Primary Filling
+                      <select value={cakeFilling} onChange={(e) => setCakeFilling(e.target.value)}>
+                        {configuracao.recheios.map((filling) => (
+                          <option key={filling} value={filling}>{filling}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Second Filling <small>(optional complementary flavor)</small>
+                      <select value={cakeFilling2} onChange={(e) => setCakeFilling2(e.target.value)}>
+                        <option value="">None (Single Filling)</option>
+                        {configuracao.recheios
+                          .filter((f) => f !== cakeFilling)
+                          .map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                      </select>
+                    </label>
                   </div>
-                  <fieldset><legend>5. Adicionais <small>opcional</small></legend><div className="extras-options">
-                    {configuracao.adicionais.map((item) => {
-                      const preco = item.precos[tamanhoId];
-                      const indisponivel = preco == null;
-                      return <button key={item.nome} disabled={indisponivel} className={adicionais.includes(item.nome) ? "selected" : ""} onClick={() => alternarAdicional(item.nome)}><span className="check">✓</span><span><strong>{item.nome}</strong><small>{indisponivel ? "Indisponível para GG" : `+ ${moeda(preco)}`}</small></span></button>;
-                    })}
-                  </div></fieldset>
-                  <div className="live-price"><span>Valor deste bolo</span><strong>{moeda(precoBolo)}</strong></div>
-                </>
-              )}
 
-              {categoria === "kit" && (
-                <>
-                  <div className="panel-heading"><span>03</span><div><h3>Kit Festa Personalizado</h3><p>Bolo, docinhos e mini cupcakes para sua comemoração.</p></div></div>
-                  <div className="kit-list">
-                    {configuracao.kits.map((item) => {
-                      const isSelected = kitId === item.id;
-                      return (
-                        <div
-                          key={item.id}
-                          className={`kit-card ${isSelected ? "active" : ""}` }
-                          onClick={() => setKitId(item.id)}
-                          role="radio"
-                          aria-checked={isSelected}
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setKitId(item.id);
-                            }
-                          }}
-                        >
-                          <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
-                            <div
-                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: `${item.nome} — Festa Completa` });
-                              }}
-                              title="Clique para ampliar a foto"
-                              aria-label={`Ampliar foto do ${item.nome}`}
-                            >
-                              <img
-                                src={item.imagem}
-                                alt={item.nome}
-                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                                width={64}
-                                height={64}
-                                loading="lazy"
-                              />
-                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="11" cy="11" r="8"></circle>
-                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                  <line x1="11" y1="8" x2="11" y2="14"></line>
-                                  <line x1="8" y1="11" x2="14" y2="11"></line>
-                                </svg>
-                              </span>
-                            </div>
+                  {/* 5. Dietary & Custom Add-ons */}
+                  <fieldset>
+                    <legend>5. Special Add-ons & Dietary Choices <small>(optional)</small></legend>
+                    <div className="extras-options">
+                      {configuracao.adicionais.map((extra) => {
+                        const price = extra.precos[cakeSizeId];
+                        const isSelected = cakeExtras.includes(extra.nome);
+                        return (
+                          <button
+                            key={extra.nome}
+                            type="button"
+                            className={isSelected ? "selected" : ""}
+                            onClick={() => toggleCakeExtra(extra.nome)}
+                          >
+                            <span className="check">✓</span>
+                            <span>
+                              <strong>{extra.nome}</strong>
+                              <small>+ {formatCurrency(price)}</small>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
 
-                            <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="bento-title">
-                                {item.nome}
-                              </strong>
-                              <small className="bento-detail">
-                                {item.detalhe}
-                              </small>
-                            </div>
-                          </div>
-
-                          <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                            <b className="bento-price">
-                              {moeda(item.preco)}
-                            </b>
-                            <span className={`radio ${isSelected ? "selected" : ""}`} />
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="live-price">
+                    <span>Configured Cake Price</span>
+                    <strong>{formatCurrency(totalCakePrice)}</strong>
                   </div>
                 </>
               )}
 
-              {categoria === "docinhos" && (
+              {/* CATEGORY 2: CUPCAKES */}
+              {activeCategory === "cupcakes" && (
                 <>
-                  <div className="panel-heading"><span>04</span><div><h3>Docinhos</h3><p>Escolha a linha, a quantidade e o sabor.</p></div></div>
-                  <fieldset><legend>1. Linha</legend>
-                    <div className="docinho-linha-list">
-                      {(Object.keys(configuracao.docinhos) as TipoDocinho[]).map((tipo) => {
-                        const isSelected = tipoDocinho === tipo;
-                        const docinho = configuracao.docinhos[tipo];
+                  <div className="panel-heading">
+                    <span>02</span>
+                    <div>
+                      <h3>Artisan Cupcake Sets</h3>
+                      <p>Starting at $35.00/dozen. Freshly piped swirl frosting with signature toppings.</p>
+                    </div>
+                  </div>
+
+                  <fieldset>
+                    <legend>1. Select Batch Size</legend>
+                    <div className="kit-list">
+                      {configuracao.cupcakes.map((pack) => {
+                        const isSelected = cupcakePackId === pack.id;
                         return (
                           <div
-                            key={tipo}
-                            className={`docinho-linha-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
-                              isSelected
-                                ? "active border-[var(--rose)] bg-[#fff5f7] shadow-sm"
-                                : "border-[var(--line)] bg-[var(--paper)] hover:border-[var(--rose-soft)]"
-                            }`}
-                            onClick={() => mudarTipoDocinho(tipo)}
+                            key={pack.id}
+                            className={`kit-card ${isSelected ? "active" : ""}`}
+                            onClick={() => setCupcakePackId(pack.id)}
                             role="radio"
                             aria-checked={isSelected}
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                mudarTipoDocinho(tipo);
-                              }
-                            }}
                           >
-                            <div className="bento-info flex items-center gap-3 min-w-0 flex-1">
+                            <div className="bento-info">
                               <div
-                                className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
+                                className="bento-thumb-container"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setModalImagem({ src: docinho.imagem, alt: `Docinhos ${docinho.nome}`, titulo: `Docinhos ${docinho.nome}` });
+                                  setModalImage({ src: pack.imagem, alt: pack.nome, title: pack.nome });
                                 }}
-                                title="Clique para ampliar a foto"
-                                aria-label={`Ampliar foto dos docinhos ${docinho.nome}`}
                               >
-                                <img
-                                  src={docinho.imagem}
-                                  alt={`Docinhos ${docinho.nome}`}
-                                  className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                                  width={64}
-                                  height={64}
-                                  loading="lazy"
-                                />
-                                <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    <line x1="11" y1="8" x2="11" y2="14"></line>
-                                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                                  </svg>
-                                </span>
+                                <img src={pack.imagem} alt={pack.nome} width={64} height={64} />
+                                <span className="zoom-badge">🔍</span>
                               </div>
-
-                              <div className="bento-text flex flex-col justify-center min-w-0 flex-1">
-                                <strong className="bento-title">
-                                  {docinho.nome}
-                                </strong>
-                                <small className="bento-detail">
-                                  {docinho.detalhe}
-                                </small>
+                              <div className="bento-text">
+                                <strong className="bento-title">{pack.nome}</strong>
+                                <small className="bento-detail">{pack.detalhe}</small>
                               </div>
                             </div>
-
-                            <div className="bento-right flex items-center gap-3 flex-shrink-0">
-                              <b className="bento-price">
-                                a partir de {moeda(docinho.precos[25])}
-                              </b>
+                            <div className="bento-right">
+                              <b className="bento-price">{formatCurrency(pack.preco)}</b>
                               <span className={`radio ${isSelected ? "selected" : ""}`} />
                             </div>
                           </div>
@@ -628,82 +770,306 @@ export default function Home() {
                       })}
                     </div>
                   </fieldset>
-                  <fieldset><legend>2. Quantidade</legend><div className="finish-options three">
-                    {([25, 50, 100] as const).map((qtd) => <button key={qtd} className={qtdDocinhos === qtd ? "selected" : ""} onClick={() => setQtdDocinhos(qtd)}><strong>{qtd} un</strong><small>{moeda(configuracao.docinhos[tipoDocinho].precos[qtd])}</small></button>)}
-                  </div></fieldset>
-                  <label>3. Sabor<select value={saborDocinho} onChange={(e) => setSaborDocinho(e.target.value)}>{configuracao.docinhos[tipoDocinho].sabores.map((item) => <option key={item}>{item}</option>)}</select></label>
+
+                  <div className="form-grid">
+                    <label>
+                      2. Primary Flavor
+                      <select value={cupcakeFlavor} onChange={(e) => setCupcakeFlavor(e.target.value)}>
+                        {configuracao.saboresCupcake.map((flavor) => (
+                          <option key={flavor} value={flavor}>{flavor}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Second Flavor <small>(available for 2+ dozen orders)</small>
+                      <select value={cupcakeFlavor2} onChange={(e) => setCupcakeFlavor2(e.target.value)}>
+                        <option value="">None (All same flavor)</option>
+                        {configuracao.saboresCupcake
+                          .filter((f) => f !== cupcakeFlavor)
+                          .map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                      </select>
+                    </label>
+                  </div>
+
+                  <fieldset>
+                    <legend>3. Cupcake Decorations <small>(optional)</small></legend>
+                    <div className="extras-options">
+                      <button
+                        type="button"
+                        className={cupcakeFondantDiscs ? "selected" : ""}
+                        onClick={() => setCupcakeFondantDiscs(!cupcakeFondantDiscs)}
+                      >
+                        <span className="check">✓</span>
+                        <span>
+                          <strong>Custom Fondant Disc Toppers</strong>
+                          <small>+ $10.00 / dozen (Themed text, initials or ages)</small>
+                        </span>
+                      </button>
+                    </div>
+                  </fieldset>
                 </>
               )}
 
-              {categoria === "personalizados" && (
+              {/* CATEGORY 3: BROWNIES & BARS */}
+              {activeCategory === "brownies" && (
                 <>
-                  <div className="panel-heading"><span>05</span><div><h3>Doces Personalizados</h3><p>Escolha os itens e informe quantas unidades deseja de cada um.</p></div></div>
+                  <div className="panel-heading">
+                    <span>03</span>
+                    <div>
+                      <h3>Brownies & Artisan Bars</h3>
+                      <p>Starting at $30.00/batch. Rich, decadent fudge brownies and dessert bars baked fresh to order.</p>
+                    </div>
+                  </div>
+
+                  <fieldset>
+                    <legend>1. Select Batch Size</legend>
+                    <div className="kit-list">
+                      {configuracao.brownies.map((pack) => {
+                        const isSelected = browniePackId === pack.id;
+                        return (
+                          <div
+                            key={pack.id}
+                            className={`kit-card ${isSelected ? "active" : ""}`}
+                            onClick={() => setBrowniePackId(pack.id)}
+                            role="radio"
+                            aria-checked={isSelected}
+                          >
+                            <div className="bento-info">
+                              <div
+                                className="bento-thumb-container"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setModalImage({ src: pack.imagem, alt: pack.nome, title: pack.nome });
+                                }}
+                              >
+                                <img src={pack.imagem} alt={pack.nome} width={64} height={64} />
+                                <span className="zoom-badge">🔍</span>
+                              </div>
+                              <div className="bento-text">
+                                <strong className="bento-title">{pack.nome}</strong>
+                                <small className="bento-detail">{pack.detalhe}</small>
+                              </div>
+                            </div>
+                            <div className="bento-right">
+                              <b className="bento-price">{formatCurrency(pack.preco)}</b>
+                              <span className={`radio ${isSelected ? "selected" : ""}`} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <div className="form-grid">
+                    <label>
+                      2. Flavor Variety
+                      <select value={brownieFlavor} onChange={(e) => setBrownieFlavor(e.target.value)}>
+                        {configuracao.saboresBrownies.map((flavor) => (
+                          <option key={flavor} value={flavor}>{flavor}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Second Variety <small>(for Full Batch tray orders)</small>
+                      <select value={brownieFlavor2} onChange={(e) => setBrownieFlavor2(e.target.value)}>
+                        <option value="">None (Single variety)</option>
+                        {configuracao.saboresBrownies
+                          .filter((f) => f !== brownieFlavor)
+                          .map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                      </select>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* CATEGORY 4: CAKESICLES */}
+              {activeCategory === "cakesicles" && (
+                <>
+                  <div className="panel-heading">
+                    <span>04</span>
+                    <div>
+                      <h3>Artisan Cakesicles</h3>
+                      <p>Starting at $40.00/dozen. Gourmet cake popsicles dipped in Belgian chocolate with decorative details.</p>
+                    </div>
+                  </div>
+
+                  <fieldset>
+                    <legend>1. Select Batch Quantity</legend>
+                    <div className="kit-list">
+                      {configuracao.cakesicles.map((pack) => {
+                        const isSelected = cakesiclePackId === pack.id;
+                        return (
+                          <div
+                            key={pack.id}
+                            className={`kit-card ${isSelected ? "active" : ""}`}
+                            onClick={() => setCakesiclePackId(pack.id)}
+                            role="radio"
+                            aria-checked={isSelected}
+                          >
+                            <div className="bento-info">
+                              <div
+                                className="bento-thumb-container"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setModalImage({ src: pack.imagem, alt: pack.nome, title: pack.nome });
+                                }}
+                              >
+                                <img src={pack.imagem} alt={pack.nome} width={64} height={64} />
+                                <span className="zoom-badge">🔍</span>
+                              </div>
+                              <div className="bento-text">
+                                <strong className="bento-title">{pack.nome}</strong>
+                                <small className="bento-detail">{pack.detalhe}</small>
+                              </div>
+                            </div>
+                            <div className="bento-right">
+                              <b className="bento-price">{formatCurrency(pack.preco)}</b>
+                              <span className={`radio ${isSelected ? "selected" : ""}`} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <div className="form-grid">
+                    <label>
+                      2. Design & Finishing Style
+                      <select value={cakesicleStyle} onChange={(e) => setCakesicleStyle(e.target.value)}>
+                        {configuracao.estilosCakesicles.map((style) => (
+                          <option key={style} value={style}>{style}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      3. Cake Base Flavor
+                      <select value={cakesicleFlavor} onChange={(e) => setCakesicleFlavor(e.target.value)}>
+                        <option value="Signature Vanilla">Signature Vanilla</option>
+                        <option value="Double Chocolate Fudge">Double Chocolate Fudge</option>
+                        <option value="Red Velvet">Red Velvet</option>
+                        <option value="Funfetti Birthday Cake">Funfetti Birthday Cake</option>
+                      </select>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* CATEGORY 5: DESSERT CUPS & MINI TREATS */}
+              {activeCategory === "cups" && (
+                <>
+                  <div className="panel-heading">
+                    <span>05</span>
+                    <div>
+                      <h3>Dessert Cups & Mini Treats</h3>
+                      <p>Starting at $45.00. Individual gourmet shooters in clear cups with mini spoons. Perfect for dessert tables!</p>
+                    </div>
+                  </div>
+
+                  <fieldset>
+                    <legend>1. Select Quantity</legend>
+                    <div className="finish-options three">
+                      {([12, 24, 36] as const).map((cnt) => (
+                        <button
+                          key={cnt}
+                          type="button"
+                          className={cupCount === cnt ? "selected" : ""}
+                          onClick={() => setCupCount(cnt)}
+                        >
+                          <strong>{cnt} Dessert Cups</strong>
+                          <small>{formatCurrency(configuracao.dessertCups.precos[cnt])}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  <div className="form-grid">
+                    <label>
+                      2. Primary Flavor
+                      <select value={cupFlavor} onChange={(e) => setCupFlavor(e.target.value)}>
+                        {configuracao.dessertCups.sabores.map((flavor) => (
+                          <option key={flavor} value={flavor}>{flavor}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Second Flavor <small>(for 24 or 36 cup orders)</small>
+                      <select value={cupFlavor2} onChange={(e) => setCupFlavor2(e.target.value)}>
+                        <option value="">None (All same flavor)</option>
+                        {configuracao.dessertCups.sabores
+                          .filter((f) => f !== cupFlavor)
+                          .map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                      </select>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* CATEGORY 6: THEMED & PERSONALIZED DESSERTS */}
+              {activeCategory === "treats" && (
+                <>
+                  <div className="panel-heading">
+                    <span>06</span>
+                    <div>
+                      <h3>Themed & Personalized Desserts</h3>
+                      <p>Starting at $50.00. Individually crafted sugar cookies, cake pops, macarons, and specialty treats for your event.</p>
+                    </div>
+                  </div>
+
                   <div className="personalizados-list">
                     {configuracao.docesPersonalizados.map((item) => {
-                      const itemNoCarrinho = itens.find((it) => it.titulo === item.nome);
-                      const qtdNoCarrinho = itemNoCarrinho?.quantidade ?? 0;
+                      const itemInCart = cartItems.find((it) => it.title === item.nome);
+                      const qty = itemInCart?.quantity ?? 0;
                       return (
                         <article
                           key={item.id}
-                          className={`personalizado-card flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all ${
-                            qtdNoCarrinho > 0 ? "active border-[var(--rose)] bg-[#fff5f7]" : "border-[var(--line)] bg-[var(--paper)]"
-                          }`}
+                          className={`personalizado-card ${qty > 0 || treatId === item.id ? "active" : ""}`}
+                          onClick={() => setTreatId(item.id)}
                         >
-                          <div className="personalizado-info flex items-center gap-3 min-w-0 flex-1">
+                          <div className="personalizado-info">
                             <div
-                              className="bento-thumb-container relative group cursor-pointer flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden shadow-sm hover:opacity-90 transition-all"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setModalImagem({ src: item.imagem, alt: item.nome, titulo: item.nome });
-                              }}
-                              title="Clique para ampliar a foto"
-                              aria-label={`Ampliar foto de ${item.nome}`}
+                              className="bento-thumb-container"
+                              onClick={() => setModalImage({ src: item.imagem, alt: item.nome, title: item.nome })}
+                              title="Click to view full photo"
                             >
-                              <img
-                                src={item.imagem}
-                                alt={item.nome}
-                                className="w-16 h-16 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                                width={64}
-                                height={64}
-                                loading="lazy"
-                              />
-                              <span className="zoom-badge absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm text-white p-1 rounded-md flex items-center justify-center group-hover:bg-black/85 transition-colors pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="11" cy="11" r="8"></circle>
-                                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                  <line x1="11" y1="8" x2="11" y2="14"></line>
-                                  <line x1="8" y1="11" x2="14" y2="11"></line>
-                                </svg>
-                              </span>
+                              <img src={item.imagem} alt={item.nome} width={64} height={64} loading="lazy" />
+                              <span className="zoom-badge">🔍</span>
                             </div>
-                            <div className="personalizado-text flex flex-col justify-center min-w-0 flex-1">
-                              <strong className="personalizado-title">
-                                {item.nome}
-                              </strong>
+                            <div className="personalizado-text">
+                              <strong className="personalizado-title">{item.nome}</strong>
                               <span className="personalizado-price">
-                                {moeda(item.preco)} <small>cada</small>
+                                {formatCurrency(item.preco)} <small>each / batch</small>
                               </span>
                             </div>
                           </div>
 
-                          <div className="personalizado-qty flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap">
+                          <div className="personalizado-qty">
                             <button
                               type="button"
                               className="qty-btn"
-                              onClick={() => alterarQtdPersonalizado(item, -1)}
-                              disabled={qtdNoCarrinho === 0}
-                              aria-label={`Diminuir quantidade de ${item.nome}`}
+                              onClick={() => handleStepperChange(item, -1)}
+                              disabled={qty === 0}
+                              aria-label={`Decrease quantity of ${item.nome}`}
                             >
                               －
                             </button>
                             <span className="qty-value" aria-live="polite">
-                              {qtdNoCarrinho}
+                              {qty}
                             </span>
                             <button
                               type="button"
                               className="qty-btn add"
-                              onClick={() => alterarQtdPersonalizado(item, 1)}
-                              aria-label={`Aumentar quantidade de ${item.nome}`}
+                              onClick={() => handleStepperChange(item, 1)}
+                              aria-label={`Increase quantity of ${item.nome}`}
                             >
                               ＋
                             </button>
@@ -712,116 +1078,248 @@ export default function Home() {
                       );
                     })}
                   </div>
-                  <p className="personalizados-hint">Use os botões de ＋ e － ao lado de cada doce para montar sua quantidade.</p>
+                  <p className="personalizados-hint">
+                    Use the ＋ and － controls above to adjust treat quantities directly into your order summary.
+                  </p>
                 </>
               )}
 
-              {categoria !== "personalizados" && (
+              {/* Add to order row for categories 1 to 5 */}
+              {activeCategory !== "treats" && (
                 <div className="add-row">
-                  <label>Quantidade<input type="number" min="1" max="20" value={quantidade} onChange={(e) => setQuantidade(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} /></label>
-                  <button className="button primary add-button" onClick={adicionar}>Adicionar ao pedido <span>＋</span></button>
+                  <label>
+                    Quantity
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                    />
+                  </label>
+                  <button className="button primary add-button" onClick={handleAddToCart}>
+                    Add to Order <span>＋</span>
+                  </button>
                 </div>
               )}
-              {aviso && <p className="notice" role="status">{aviso}</p>}
+
+              {userNotice && (
+                <p className="notice" role="status">
+                  {userNotice}
+                </p>
+              )}
             </div>
           </div>
 
-          <aside className="order-summary" id="finalizar">
-            <div className="summary-head"><span>Seu pedido</span><b>{itens.length} {itens.length === 1 ? "item" : "itens"}</b></div>
-            {itens.length === 0 ? (
-              <div className="empty-cart"><span>♡</span><p>Seu pedido está vazio.</p><small>Escolha um produto ao lado para começar.</small></div>
+          {/* ----------------- ORDER SUMMARY / CHECKOUT ASIDE ----------------- */}
+          <aside className="order-summary" id="checkout-section">
+            <div className="summary-head">
+              <span>Your Order</span>
+              <b>
+                {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+              </b>
+            </div>
+
+            {cartItems.length === 0 ? (
+              <div className="empty-cart">
+                <span>♡</span>
+                <p>Your order is currently empty.</p>
+                <small>Select a dessert category to begin customizing.</small>
+              </div>
             ) : (
-              <div className="cart-list">{itens.map((item) => <article key={item.id}><div><strong>{item.quantidade}× {item.titulo}</strong><small>{item.descricao}</small></div><span>{moeda(item.total)}</span><button className="cart-remove-btn" onClick={() => setItens((atuais) => atuais.filter((atual) => atual.id !== item.id))} aria-label={`Remover ${item.titulo}`}>✕ Remover</button></article>)}</div>
+              <div className="cart-list">
+                {cartItems.map((item) => (
+                  <article key={item.id}>
+                    <div>
+                      <strong>
+                        {item.quantity}× {item.title}
+                      </strong>
+                      <small>{item.description}</small>
+                    </div>
+                    <span>{formatCurrency(item.total)}</span>
+                    <button
+                      className="cart-remove-btn"
+                      onClick={() => setCartItems((curr) => curr.filter((c) => c.id !== item.id))}
+                      aria-label={`Remove ${item.title}`}
+                    >
+                      ✕ Remove
+                    </button>
+                  </article>
+                ))}
+              </div>
             )}
 
+            {/* Totals & 50% Deposit Split Card */}
             <div className="totals-card">
               <div className="totals-header">
                 <div>
-                  <span className="totals-title">Total estimado</span>
-                  <small className="totals-subtitle">Baseado nos itens escolhidos</small>
+                  <span className="totals-title">Estimated Total</span>
+                  <small className="totals-subtitle">Based on selected dessert items</small>
                 </div>
-                <strong className="totals-amount">{moeda(total)}</strong>
+                <strong className="totals-amount">{formatCurrency(cartTotal)}</strong>
               </div>
 
               <div className="payment-split-grid">
-                <div className="split-pill split-pix">
+                <div className="split-pill split-deposit">
                   <div className="split-badge-row">
-                    <span className="split-badge pix-badge">Sinal 50% Pix</span>
-                    <span className="split-tag">Para reservar</span>
+                    <span className="split-badge deposit-badge">50% Deposit</span>
+                    <span className="split-tag">To Reserve</span>
                   </div>
-                  <strong className="split-value">{moeda(total / 2)}</strong>
-                  <p className="split-caption">Pague via Pix para confirmar a data</p>
+                  <strong className="split-value">{formatCurrency(cartTotal / 2)}</strong>
+                  <p className="split-caption">Payable to secure your event date</p>
                 </div>
 
                 <div className="split-pill split-delivery">
                   <div className="split-badge-row">
-                    <span className="split-badge delivery-badge">Restante 50%</span>
-                    <span className="split-tag">Na entrega</span>
+                    <span className="split-badge delivery-badge">Remaining 50%</span>
+                    <span className="split-tag">Upon Delivery</span>
                   </div>
-                  <strong className="split-value">{moeda(total / 2)}</strong>
-                  <p className="split-caption">Pague no recebimento da encomenda</p>
+                  <strong className="split-value">{formatCurrency(cartTotal / 2)}</strong>
+                  <p className="split-caption">Due at pickup or delivery</p>
                 </div>
               </div>
             </div>
 
+            {/* Customer Details Form */}
             <div className="customer-fields">
-              <h3>Dados para a encomenda</h3>
-              <label>Seu nome<input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Como podemos te chamar?" /></label>
+              <h3>Order Details</h3>
+
+              <label>
+                Client Name
+                <input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Your full name"
+                  required
+                />
+              </label>
+
               <div className="form-grid">
                 <label>
-                  Data desejada <small>(mín. {configuracao.diasAntecedenciaMinima} dias)</small>
-                  <input type="date" min={dataMinimaEncomenda()} value={data} onChange={(e) => setData(e.target.value)} />
+                  Event / Delivery Date <small>(min. {configuracao.diasAntecedenciaMinima} days)</small>
+                  <input
+                    type="date"
+                    min={getMinOrderDate()}
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    required
+                  />
                 </label>
+
                 <label>
-                  Horário
-                  <input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} />
+                  Preferred Time
+                  <input
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    required
+                  />
                 </label>
               </div>
-              <label>Ocasião ou tema <small>opcional</small><input value={ocasiao} onChange={(e) => setOcasiao(e.target.value)} placeholder="Ex.: aniversário, flores rosa..." /></label>
-              <label>Observações <small>opcional</small><textarea rows={3} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Escreva detalhes importantes" /></label>
+
+              <label>
+                Occasion or Theme <small>(e.g. Birthday, Baby Shower, Roses & Gold)</small>
+                <input
+                  value={eventOccasion}
+                  onChange={(e) => setEventOccasion(e.target.value)}
+                  placeholder="e.g. 1st Birthday, Winnie the Pooh, 10th Anniversary"
+                />
+              </label>
+
+              <label>
+                Design Requests, Color Palette & Dietary Notes <small>(optional)</small>
+                <textarea
+                  rows={3}
+                  value={specialNotes}
+                  onChange={(e) => setSpecialNotes(e.target.value)}
+                  placeholder="Specify custom wording, color scheme, dietary allergies, or delivery address..."
+                />
+              </label>
             </div>
 
-            <button className="whatsapp-button" onClick={enviarWhatsApp}><span>◉</span><span><strong>Enviar pedido no WhatsApp</strong><small>{configuracao.marca.whatsappExibicao}</small></span><b>→</b></button>
-            <p className="confirmation-note">O pedido será confirmado pela Glscakes após o pagamento do sinal.</p>
+            {/* WhatsApp Conversion CTA */}
+            <button className="whatsapp-button" onClick={handleSendWhatsApp}>
+              <span>💬</span>
+              <span>
+                <strong>Send Order via WhatsApp</strong>
+                <small>{configuracao.marca.whatsappExibicao} · Direct to Narmatha</small>
+              </span>
+              <b>→</b>
+            </button>
+
+            <p className="confirmation-note">
+              Orders are reviewed and confirmed by Home Treats LLC upon receiving your order details and 50% reservation deposit.
+            </p>
           </aside>
         </div>
       </section>
 
+      {/* ----------------- BANNER SECTION ----------------- */}
       <section className="payment-banner">
-        <span className="big-heart">♡</span><div><p className="eyebrow">Tudo combinado</p><h2>50% para reservar.<br /><em>50% na entrega.</em></h2><p>Ao finalizar, seu pedido chega organizado no WhatsApp com itens, valores e data desejada.</p></div><a className="button light" href="#monte-seu-pedido">Fazer meu pedido →</a>
+        <span className="big-heart">♡</span>
+        <div>
+          <p className="eyebrow">Seamless Experience</p>
+          <h2>
+            50% to reserve.<br />
+            <em>50% on delivery.</em>
+          </h2>
+          <p>
+            When you complete your selection, your full order specification is sent directly to Narmatha via WhatsApp, ensuring prompt personal attention and custom consultation for your celebration.
+          </p>
+        </div>
+        <a className="button light" href="#build-order">
+          Start Your Order →
+        </a>
       </section>
 
-      <footer><a className="footer-brand" href="#inicio"><img src={configuracao.marca.logo} alt="" /><span><strong>Glscakes</strong><small>Confeitaria artesanal</small></span></a><p>Realizando sonhos com amor e doçuras.</p><a href={`https://wa.me/${configuracao.marca.whatsapp}`} target="_blank" rel="noreferrer">{configuracao.marca.whatsappExibicao}</a></footer>
+      {/* ----------------- FOOTER ----------------- */}
+      <footer>
+        <a className="footer-brand" href="#top">
+          <img src={configuracao.marca.logo} alt="Home Treats Logo" />
+          <span>
+            <strong>
+              Home Treats<span>by Narmatha</span>
+            </strong>
+            <small>{configuracao.marca.tagline}</small>
+          </span>
+        </a>
+        <p>Serving Frisco, Plano, McKinney, Allen & surrounding Texas areas.</p>
+        <a
+          href={`https://wa.me/${configuracao.marca.whatsapp}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {configuracao.marca.whatsappExibicao}
+        </a>
+      </footer>
 
-      {modalImagem && (
+      {/* ----------------- LIGHTBOX MODAL ----------------- */}
+      {modalImage && (
         <div
-          className="lightbox-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-          onClick={() => setModalImagem(null)}
+          className="lightbox-overlay"
+          onClick={() => setModalImage(null)}
           role="dialog"
           aria-modal="true"
-          aria-label={`Visualização ampliada de ${modalImagem.titulo}`}
+          aria-label={`Enlarged photo: ${modalImage.title}`}
         >
-          <div
-            className="lightbox-content relative max-w-xl max-h-[90vh] w-full flex flex-col items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="lightbox-close absolute -top-12 right-0 sm:-right-10 text-white/85 hover:text-white bg-black/60 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center transition-all cursor-pointer text-lg font-bold shadow-lg"
-              onClick={() => setModalImagem(null)}
-              aria-label="Fechar ampliação"
+              className="lightbox-close"
+              onClick={() => setModalImage(null)}
+              aria-label="Close enlarged photo"
             >
               ✕
             </button>
-            <div className="lightbox-image-box overflow-hidden rounded-2xl bg-[#1e1317] border border-white/15 shadow-2xl flex flex-col items-center w-full">
+            <div className="lightbox-image-box">
               <img
-                src={modalImagem.src}
-                alt={modalImagem.alt}
-                className="lightbox-img max-h-[75vh] w-auto max-w-full object-contain rounded-t-2xl"
+                src={modalImage.src}
+                alt={modalImage.alt}
+                className="lightbox-img"
               />
-              <div className="lightbox-caption w-full bg-[#25161c] px-4 py-3 text-center border-t border-white/10">
-                <h4 className="text-white text-base sm:text-lg font-semibold">{modalImagem.titulo}</h4>
-                <p className="text-white/60 text-xs mt-0.5">Pressione ESC ou clique fora da imagem para fechar</p>
+              <div className="lightbox-caption">
+                <h4>{modalImage.title}</h4>
+                <p>Press ESC or click anywhere outside to close</p>
               </div>
             </div>
           </div>
